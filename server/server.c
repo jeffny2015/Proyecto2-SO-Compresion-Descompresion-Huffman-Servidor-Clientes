@@ -74,21 +74,21 @@ void removerCliente(int puerto){
 void imprimirClientes(){
     printf("Pagina\t\tVersion\n");
     for (size_t i = 0; i  < len_tabla_clientes; i++) {
-      
+
     }
 
 }
 void *escuchandoServidor(){
-    
+
     char enter[10];
     while(1){
         scanf("%s",enter);
-        
+
         detener = 1;
         close(socket_server);
-        exit(1);    
+        exit(1);
     }
-    
+
 
 
 }
@@ -131,19 +131,19 @@ void *conexionClientes(void *param){
        if(recv(nuevo_socket, buffer, 256, 0) < 0){
             printf("Error al recivir paquetes.\n");
        }else{
-            
+
             char *token = strtok(buffer,"|");
             l_e = strcmp(token, "L");
             // L => para leer  En => para escribir
             if (!l_e){
-                
+
                 token =  strtok(NULL,"|");
                 indice_pagina_pedido = index_paginas[atoi(token)];
                 bzero(buffer, 256);
                 sprintf(buffer, "%d", indice_pagina_pedido);
                 send(nuevo_socket, buffer, strlen(buffer)+1,0);
             }else{
-                
+
                 if (!(strcmp(token, "E1"))){
                     //Quiere escribir, es dueño de la página y tiene la página
                     //al ser dueño sabe quién tiene copia de las páginas, pide que las borren y la actualiza
@@ -195,7 +195,7 @@ void iniciarSocketTCP(char *ip,int puerto,int disponibilidad){
     }
     if(listen(socket_server, disponibilidad) < 0){
         printf("[-] Error en el listen\n");
-        exit(1);   
+        exit(1);
     }
 
     printf("[-] Abriendo: %s\n",archivo);
@@ -208,11 +208,11 @@ void iniciarSocketTCP(char *ip,int puerto,int disponibilidad){
     /* Get file stats */
     if (fstat(manejar_archivo, &file_stat) < 0){
         printf("[-] No se pudo optener la info del archivo: %s\n",archivo);
-        exit(1);       
+        exit(1);
     }
 
     fprintf(stdout, "[-] Largo del archivo: %ld bytes\n", file_stat.st_size);
-    
+
 
     //detener = 0;
     //pthread_create(&detener_servidor,NULL,escuchandoServidor,NULL);
@@ -232,19 +232,19 @@ void iniciarSocketTCP(char *ip,int puerto,int disponibilidad){
             printf("[-] Error en el socket con el cliente\n");
             exit(1);
         }
-        printf("[-] Conectando ..\n");
-        hilo = pthread_create(&interrupt, NULL, conexionClientes, (void*)&nuevo_socket);
-        if(hilo){
-            printf("[-] Error con el Server al crear el hilo%d\n", hilo);
-        }else{
-          agregarCliente(inet_ntoa(direccion_cliente.sin_addr), ntohs(direccion_cliente.sin_port), nuevo_socket);
-        
-        }
+        agregarCliente(inet_ntoa(direccion_cliente.sin_addr), ntohs(direccion_cliente.sin_port), nuevo_socket);
         printf("[-] Cantidad de clientes: %d\n",len_tabla_clientes);
         printf("[-] Quiere comprimir el archivo? y/n: ");
         scanf("%s",quiere);
         if (strcmp(quiere,"y") == 0){
             enviar = 1;
+            for (int i = 0; i < len_tabla_clientes; i++) {
+                printf("[-] Conectando ..\n");
+                hilo = pthread_create(&interrupt, NULL, conexionClientes, (void*)&(TablaClientes[i].socket));
+                if(hilo){
+                    printf("[-] Error con el Server al crear el hilo%d\n", hilo);
+                }
+            }
         }
         bzero(quiere, 10);
 
