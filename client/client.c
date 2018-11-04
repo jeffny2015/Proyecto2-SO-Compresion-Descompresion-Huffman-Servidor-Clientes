@@ -24,7 +24,7 @@ int datos_pendientes = 0;
 FILE *archivoAcomprimir;
 //char buff[28];
 
-#define FILENAME "layout.bin"
+#define FILENAME "archivo.txt"
 
 int iniciarConfig(const char *nombre){
     FILE *archivo;

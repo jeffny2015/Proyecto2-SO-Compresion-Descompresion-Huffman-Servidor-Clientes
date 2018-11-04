@@ -23,6 +23,7 @@ int puertoHilo;
 int len_tabla_clientes = 0;
 char *archivo;
 int manejar_archivo;
+int contador_archivo_enviado = 0;
 
 int enviar;
 int sent_bytes;
@@ -96,7 +97,7 @@ void *escuchandoServidor(){
 void *conexionClientes(void *param){
     //Hilo de cada cliente para que el server se siga comunicando con el cliente
     //printf("[Cliente]Conectado\n");
-    int recibir, escribir,nuevo_socket;
+    int recibir, escribir, nuevo_socket;
     nuevo_socket = *((int*)param);
     char* ip = ipHilo;
     int puerto = puertoHilo;
@@ -107,7 +108,38 @@ void *conexionClientes(void *param){
             break;
         }
     }
+    char nombre_archivo[7];
+    char num[5];
 
+    if(contador_archivo_enviado < 10){
+      strcpy(nombre_archivo, "x0");
+    }else{
+      strcpy(nombre_archivo, "x");
+    }
+
+    sprintf(num, "%d", contador_archivo_enviado);
+    strcat(nombre_archivo, num);
+
+    contador_archivo_enviado += 1;
+    printf("%s\n", nombre_archivo);
+    printf("%d\n", contador_archivo_enviado);
+
+    /*
+    printf("[-] Abriendo: %s\n",archivo);
+    manejar_archivo = open(archivo, O_RDONLY);
+
+    if (manejar_archivo < 0){
+        printf("[-] No se pudo leer el archivo: %s\n",archivo);
+        exit(1);
+    }
+
+    if (fstat(manejar_archivo, &file_stat) < 0){
+        printf("[-] No se pudo optener la info del archivo: %s\n",archivo);
+        exit(1);
+    }
+
+    fprintf(stdout, "[-] Largo del archivo: %ld bytes\n", file_stat.st_size);
+    */
     sprintf(file_size, "%ld", file_stat.st_size);
 
     len = send(nuevo_socket, file_size, sizeof(file_size), 0);
@@ -169,6 +201,7 @@ void iniciarSocketTCP(char *ip,int puerto,int disponibilidad){
     int hilo;
     int one = 1;
     char quiere[10];
+    long int bytesCliente;
     enviar = 0;
     struct sockaddr_in direccion_servidor, direccion_cliente, direccion_cliente_broadcast;
 
@@ -199,15 +232,15 @@ void iniciarSocketTCP(char *ip,int puerto,int disponibilidad){
     }
 
     printf("[-] Abriendo: %s\n",archivo);
-    manejar_archivo = open(archivo,O_RDONLY);
+    manejar_archivo = open(archivo, O_RDONLY);
 
     if (manejar_archivo < 0){
         printf("[-] No se pudo leer el archivo: %s\n",archivo);
         exit(1);
     }
-    /* Get file stats */
+    // Obtenemos la informacion del archivo
     if (fstat(manejar_archivo, &file_stat) < 0){
-        printf("[-] No se pudo optener la info del archivo: %s\n",archivo);
+        printf("[-] No se pudo obtener la info del archivo: %s\n",archivo);
         exit(1);
     }
 
@@ -220,10 +253,6 @@ void iniciarSocketTCP(char *ip,int puerto,int disponibilidad){
     printf("[-] Escuchando ...\n");
     while(1){
 
-        /*if (detener){
-            printf("[-] Adios\n");
-            break;
-        }*/
         nuevo_socket = accept(socket_server, (struct sockaddr*)&direccion_cliente, &len_dir);
         printf("[-] Conexion aceptada de la direccion %s:%d\n", inet_ntoa(direccion_cliente.sin_addr), ntohs(direccion_cliente.sin_port));
         ipHilo = inet_ntoa(direccion_cliente.sin_addr);
@@ -237,6 +266,42 @@ void iniciarSocketTCP(char *ip,int puerto,int disponibilidad){
         printf("[-] Quiere comprimir el archivo? y/n: ");
         scanf("%s",quiere);
         if (strcmp(quiere,"y") == 0){
+
+            printf("[-] Tamanio del archivo %ld dividido entre %d clientes\n", file_stat.st_size, len_tabla_clientes);
+            bytesCliente = file_stat.st_size / len_tabla_clientes;
+
+            //distribuimos correctamente los archivos
+            //si la cantidad de clientes es impar, la cantidad de bytes tambien y lo mismo si es par, para que no quede 1 byte suelto
+            if(bytesCliente % 2 == 1 && len_tabla_clientes % 2 == 0){
+              bytesCliente += 1;
+            }else if(bytesCliente % 2 == 0 && len_tabla_clientes % 2 == 1){
+              bytesCliente += 1;
+            }
+
+            printf("[-] Cada cliente debera comprimir %ld bytes\n", bytesCliente);
+
+            //separamos el archivo en n partes
+
+            char comandoSystem[100];
+            char num[5];
+
+            strcpy(comandoSystem, "split -b ");
+
+            sprintf(num, "%ld", bytesCliente);
+
+            strcat(comandoSystem, num);
+
+            strcat(comandoSystem, " -d ");
+            strcat(comandoSystem, archivo);
+
+
+            printf("%s\n", comandoSystem);
+
+            // ejemplo de un posible comandoSystem split -b 500 -d archivo.txt, genera x00, x01, x02, x0n archivos
+
+            system(comandoSystem);
+
+
             enviar = 1;
             for (int i = 0; i < len_tabla_clientes; i++) {
                 printf("[-] Conectando ..\n");
@@ -245,6 +310,7 @@ void iniciarSocketTCP(char *ip,int puerto,int disponibilidad){
                     printf("[-] Error con el Server al crear el hilo%d\n", hilo);
                 }
             }
+            contador_archivo_enviado = 0;
         }
         bzero(quiere, 10);
 
@@ -255,7 +321,7 @@ void iniciarSocketTCP(char *ip,int puerto,int disponibilidad){
 int main(int argc, char *argv[]){
 
 
-    //COnfiguracion  para el socket
+    //Configuracion  para el socket
     char *ip = argv[1];
     int puerto = 4444;
     int disponibilidad = 20;
