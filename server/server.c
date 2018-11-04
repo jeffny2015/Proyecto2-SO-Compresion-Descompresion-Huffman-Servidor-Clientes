@@ -9,7 +9,6 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <sys/stat.h>
-
 #include <fcntl.h>
 #include <sys/sendfile.h>
 
@@ -84,14 +83,10 @@ void *escuchandoServidor(){
     char enter[10];
     while(1){
         scanf("%s",enter);
-
         detener = 1;
         close(socket_server);
         exit(1);
     }
-
-
-
 }
 
 void *conexionClientes(void *param){
@@ -108,6 +103,7 @@ void *conexionClientes(void *param){
             break;
         }
     }
+    printf("contador_archivo_enviado: %d\n", contador_archivo_enviado );
     char nombre_archivo[7];
     char num[5];
 
@@ -120,35 +116,41 @@ void *conexionClientes(void *param){
     sprintf(num, "%d", contador_archivo_enviado);
     strcat(nombre_archivo, num);
 
-    contador_archivo_enviado += 1;
+
     printf("%s\n", nombre_archivo);
     printf("%d\n", contador_archivo_enviado);
 
-    /*
-    printf("[-] Abriendo: %s\n",archivo);
-    manejar_archivo = open(archivo, O_RDONLY);
+
+    printf("[-] Abriendo: %s\n",nombre_archivo);
+    manejar_archivo = open(nombre_archivo, O_RDONLY);
 
     if (manejar_archivo < 0){
-        printf("[-] No se pudo leer el archivo: %s\n",archivo);
+        printf("[-] No se pudo leer el archivo: %s\n",nombre_archivo);
         exit(1);
     }
 
     if (fstat(manejar_archivo, &file_stat) < 0){
-        printf("[-] No se pudo optener la info del archivo: %s\n",archivo);
+        printf("[-] No se pudo optener la info del archivo: %s\n",nombre_archivo);
         exit(1);
     }
 
     fprintf(stdout, "[-] Largo del archivo: %ld bytes\n", file_stat.st_size);
-    */
+
     sprintf(file_size, "%ld", file_stat.st_size);
+    /*
+    len = send(nuevo_socket, nombre_archivo, sizeof(nombre_archivo), 0);
+    if (len < 0){
+        printf("[-] Error enviando el nombre del archivo");
+        exit(1);
+    }*/
+    strcat(file_size, "|");
+    strcat(file_size, nombre_archivo);
 
     len = send(nuevo_socket, file_size, sizeof(file_size), 0);
     if (len < 0){
         printf("[-] Error enviando info del archivo");
         exit(1);
     }
-
-
 
     sent_bytes = 0;
     offset = 0;
@@ -306,26 +308,26 @@ void iniciarSocketTCP(char *ip,int puerto,int disponibilidad){
             for (int i = 0; i < len_tabla_clientes; i++) {
                 printf("[-] Conectando ..\n");
                 hilo = pthread_create(&interrupt, NULL, conexionClientes, (void*)&(TablaClientes[i].socket));
+                printf("dsono%d\n", contador_archivo_enviado );
                 if(hilo){
                     printf("[-] Error con el Server al crear el hilo%d\n", hilo);
                 }
+                usleep(100000);
+                contador_archivo_enviado += 1;
             }
             contador_archivo_enviado = 0;
         }
         bzero(quiere, 10);
-
     }
     close(socket_server);
 }
 
 int main(int argc, char *argv[]){
 
-
     //Configuracion  para el socket
     char *ip = argv[1];
     int puerto = 4444;
     int disponibilidad = 20;
-
 
     archivo = argv[2];
 

@@ -24,8 +24,6 @@ int datos_pendientes = 0;
 FILE *archivoAcomprimir;
 //char buff[28];
 
-#define FILENAME "archivo.txt"
-
 int iniciarConfig(const char *nombre){
     FILE *archivo;
     archivo = fopen(nombre,"r");
@@ -46,7 +44,6 @@ void iniciarSocketTCP(char *ip,int puerto){
     int escribir;
     struct sockaddr_in direccion_servidor;
     struct hostent* servidor;
-
 
     socket_cliente = socket(AF_INET, SOCK_STREAM, 0);
     printf("[-] Iniciando Socket\n");
@@ -70,17 +67,27 @@ void iniciarSocketTCP(char *ip,int puerto){
     //bzero(buff, 28);
 
     printf("[-] Recibiendo datos\n");
-    /* Receiving file size */
+
+    /* Recivimo size del archivo y el nombre*/
     recv(socket_cliente, buffer, BUFSIZ, 0);
-    tamanio_archivo = atoi(buffer);
-    //fprintf(stdout, "\nFile size : %d\n", tamanio_archivo);
+    printf("contenido %s\n", buffer );
+
+    //split para sacar el nombre y el size del archivo
+
+    char *token = strtok(buffer,"|");
+    tamanio_archivo = atoi(token);
+
+    printf("size %d\n", tamanio_archivo);
+
+    char *nombreArchivo = strtok(NULL, "|");
+
+    printf("nombre %s\n", nombreArchivo);
 
     printf("[-] Cargando archivo\n");
-    archivoAcomprimir = fopen(FILENAME, "w");
+    archivoAcomprimir = fopen(nombreArchivo, "w");
     if (archivoAcomprimir == NULL)
     {
             fprintf(stderr, "Error al abrir el archivo: %s\n", strerror(errno));
-
             exit(1);
     }
 
@@ -91,6 +98,7 @@ void iniciarSocketTCP(char *ip,int puerto){
         datos_pendientes -= len;
         fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
     }
+
 
         //strcpy(buffer, "hola mundo");
         //No es dueño de la página y no tiene la página
@@ -109,7 +117,6 @@ void iniciarSocketTCP(char *ip,int puerto){
 int main(int argc, char const *argv[]){
 
     const char *nombre = argv[1];
-
 
     //netstat -tupln
     //sudo kill -9 PID
