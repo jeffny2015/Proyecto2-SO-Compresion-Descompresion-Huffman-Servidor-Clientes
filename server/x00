@@ -1,0 +1,34 @@
+Split large files into a number of smaller files in Unix
+
+To split large files into smaller files in Unix, use the split command. At the Unix prompt, enter
+
+  split [options] filename prefix
+
+Replace filename with the name of the large file you wish to split. Replace prefix with the name you wish to give the small output files. You can exclude [options], or replace it with either of the following:
+
+  -l linenumber
+
+  -b bytes
+
+If you use the -l (a lowercase L) option, replace linenumber with the number of lines you'd like in each of the smaller files (the default is 1,000). If you use the -b option, replace bytes with the number of bytes you'd like in each of the smaller files.
+
+The split command will give each output file it creates the name prefix with an extension tacked to the end that indicates its order. By default, the split command adds aa to the first output file, proceeding through the alphabet to zz for subsequent files. If you do not specify a prefix, most systems use x.
+Examples
+
+    In this simple example, assume myfile is 3,000 lines long:
+
+      split myfile
+
+    This will output three 1000-line files: xaa, xab, and xac.
+    Working on the same file, this next example is more complex:
+
+      split -l 500 myfile segment
+
+    This will output six 500-line files: segmentaa, segmentab, segmentac, segmentad, segmentae, and segmentaf.
+    Finally, assume myfile is a 160KB file:
+
+      split -b 40k myfile segment
+
+    This will output four 40KB files: segmentaa, segmentab, segmentac, and segmentad.
+
+For more information, consult the man page for the split command. At the Unix prompt, enter:

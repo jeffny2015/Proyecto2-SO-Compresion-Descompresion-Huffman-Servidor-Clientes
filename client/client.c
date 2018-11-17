@@ -11,6 +11,7 @@
 #include <math.h>
 #include <pthread.h>
 #include <errno.h>
+#include "huffman.h"
 
 char ip_servidor[25];
 int *lista_paginas;
@@ -164,6 +165,7 @@ void iniciarSocketTCP(char *ip,int puerto){
     fclose(f);
 
     imprimirLista();
+    HuffmanCodes(lista_caracter, lista_apariciones, len_lista);
         //strcpy(buffer, "hola mundo");
         //No es dueño de la página y no tiene la página
         //escribir = send(socket_cliente, buffer, strlen(buffer)+1,0);
