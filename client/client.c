@@ -118,6 +118,8 @@ void iniciarSocketTCP(char *ip,int puerto){
     printf("size %d\n", tamanio_archivo);
 
     char *nombreArchivo = strtok(NULL, "|");
+    char copiaNombre[15];
+    strcpy(copiaNombre, nombreArchivo);
 
     printf("nombre %s\n", nombreArchivo);
 
@@ -136,15 +138,20 @@ void iniciarSocketTCP(char *ip,int puerto){
         datos_pendientes -= len;
         fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
     }
+    fclose(archivoAcomprimir);
+    printf("hola\n");
+    printf("aqui mierda %s\n", copiaNombre);
+
     len_lista = inicializarLista();
     //int f;
-    FILE *f =fopen(archivoAcomprimir,"r");
+    FILE *f;
+    f =fopen(copiaNombre,"r");
     //f = open(, O_RDONLY);
     int c;
     int esta;
     while(1) {
       c = fgetc(f);
-      if( feof(f) ) { 
+      if( feof(f) ) {
          break;
       }
       esta = estaEnLista((char)c);
@@ -153,11 +160,12 @@ void iniciarSocketTCP(char *ip,int puerto){
       }else{
         agregarElemento((char)c);
       }
-      printf("%c", c);
+      //printf("%c", c);
+
     }
     fclose(f);
 
-
+    imprimirLista();
         //strcpy(buffer, "hola mundo");
         //No es dueño de la página y no tiene la página
         //escribir = send(socket_cliente, buffer, strlen(buffer)+1,0);
