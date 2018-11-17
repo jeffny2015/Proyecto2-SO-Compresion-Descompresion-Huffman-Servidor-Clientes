@@ -139,8 +139,6 @@ void iniciarSocketTCP(char *ip,int puerto){
         fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
     }
     fclose(archivoAcomprimir);
-    printf("hola\n");
-    printf("aqui mierda %s\n", copiaNombre);
 
     len_lista = inicializarLista();
     //int f;
