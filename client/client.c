@@ -12,6 +12,8 @@
 #include <pthread.h>
 #include <errno.h>
 #include "huffman.h"
+#include "binario.h"
+#include "hash.h"
 
 char ip_servidor[25];
 int *lista_paginas;
@@ -23,6 +25,8 @@ int tamanio_archivo;
 char buffer[BUFSIZ];
 int datos_pendientes = 0;
 FILE *archivoAcomprimir;
+
+int contador = 0;
 
 char *lista_caracter;
 int *lista_apariciones;
@@ -166,18 +170,44 @@ void iniciarSocketTCP(char *ip,int puerto){
 
     imprimirLista();
     HuffmanCodes(lista_caracter, lista_apariciones, len_lista);
-        //strcpy(buffer, "hola mundo");
-        //No es dueño de la página y no tiene la página
-        //escribir = send(socket_cliente, buffer, strlen(buffer)+1,0);
 
-        //bzero(buffer, 256);
-        //bzero(buff, 28);
+    f = fopen(copiaNombre,"r");
+    char cpNombre[15];
+    strcpy(cpNombre,copiaNombre);
+    strcat(cpNombre,".bin");
+    binfile = fopen(cpNombre, "w");
+    while(1) {
+      c = fgetc(f);
+      if(feof(f) ) { 
+         break;
+      }
+      item = search(c);
+      if(item != NULL) {
+        for (int i = 0; i < strlen(item->data); i++) {
+            if (item->data[i] == '1')
+            {
+                WriteBit(1);
+            }else{
+                WriteBit(0);
+            }
+            contador++;
 
-        //strcpy (buffer,"L|");
-        //sprintf(buff, "%d", cliente_pagina);
-        //strcat(buffer,buff);
+            if (contador == 8){
+                contador = 0;
+            }
+        }
+      }
+    }
 
-    //}
+    int restantes = 8 - contador;
+    if (restantes > 0){
+        for (int i = 0; i < restantes; i++)
+        {
+            WriteBit(0);
+        }
+    }
+    fclose(f);
+    fclose(binfile);
 }
 
 int main(int argc, char const *argv[]){
@@ -196,3 +226,72 @@ int main(int argc, char const *argv[]){
     iniciarSocketTCP(ip,puerto);
     return 0;
 }
+
+
+/*
+int main(){
+
+    len_lista = inicializarLista();
+    //int f;
+    FILE *f =fopen("archivo.txt","r");
+    //f = open(, O_RDONLY);
+    int c;
+    int esta;
+    while(1) {
+      c = fgetc(f);
+      if( feof(f) ) { 
+         break;
+      }
+      esta = estaEnLista((char)c);
+      if (esta != -1){
+        aumentarAparicion(esta);
+      }else{
+        agregarElemento((char)c);
+      }
+      printf("%c", c);
+    }
+    fclose(f);  
+        
+    imprimirLista();
+
+    HuffmanCodes(lista_caracter, lista_apariciones, len_lista);
+
+
+    f = fopen("archivo.txt","r");
+    binfile = fopen("prueba.bin", "w");
+    while(1) {
+      c = fgetc(f);
+      if(feof(f) ) { 
+         break;
+      }
+      item = search(c);
+      if(item != NULL) {
+        for (int i = 0; i < strlen(item->data); i++) {
+            if (item->data[i] == '1')
+            {
+                WriteBit(1);
+            }else{
+                WriteBit(0);
+            }
+            contador++;
+
+            if (contador == 8){
+                contador = 0;
+            }
+        }
+      } else {
+       printf("Element not found\n");
+      }
+    }
+
+    int restantes = 8 - contador;
+    if (restantes > 0){
+        for (int i = 0; i < restantes; i++)
+        {
+            WriteBit(0);
+        }
+    }
+    fclose(f);
+    fclose(binfile);
+    return 0;
+}*/

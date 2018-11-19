@@ -1,7 +1,9 @@
 // C program for Huffman Coding 
 #include <stdio.h> 
-#include <stdlib.h> 
-
+#include <stdlib.h>
+#include <string.h>
+#include "hash.h"
+#include "lista.h"
 // This constant can be avoided by explicitly 
 // calculating height of Huffman Tree 
 #define MAX_TREE_HT 100 
@@ -161,13 +163,18 @@ void buildMinHeap(struct MinHeap* minHeap)
 } 
 
 // A utility function to print an array of size n 
-void printArr(int arr[], int n) 
+void printArr(int arr[], int n,char c) 
 { 
+	char bin[n];
 	int i; 
 	for (i = 0; i < n; ++i) 
-		printf("%d", arr[i]); 
+		//printf("%d", arr[i]);
+		 bin[i] = arr[i] + '0';
+	bin[n] = '\0';
 
-	printf("\n"); 
+	printf("key[%c:%d], val[%s]\n", c,c,bin);
+	insert(c, bin);
+
 } 
 
 // Utility function to check if this node is leaf 
@@ -260,12 +267,13 @@ void printCodes(struct MinHeapNode* root, int arr[], int top)
 	// it contains one of the input 
 	// characters, print the character 
 	// and its code from arr[] 
-	if (isLeaf(root)) { 
+	if (isLeaf(root)) {
+		printArr(arr, top,root->data);
+	}
+}
 
-		printf("%c: ", root->data); 
-		printArr(arr, top); 
-	} 
-} 
+
+
 
 // The main function that builds a 
 // Huffman Tree and print codes by traversing 
@@ -273,13 +281,25 @@ void printCodes(struct MinHeapNode* root, int arr[], int top)
 void HuffmanCodes(char data[], int freq[], int size) 
 
 { 
+	int len = len_lista;
+	setSize(len);
+	//hashArray = (struct DataItem**) malloc(len*sizeof(struct DataItem));
+
+	dummyItem = (struct DataItem*) malloc(sizeof(struct DataItem));
+	strcpy(dummyItem->data,"-1");  
+	dummyItem->key = -1; 
+
 	// Construct Huffman Tree 
-	struct MinHeapNode* root 
-		= buildHuffmanTree(data, freq, size); 
+	struct MinHeapNode* root = buildHuffmanTree(data, freq, size); 
 
 	// Print Huffman codes using 
 	// the Huffman tree built above 
 	int arr[MAX_TREE_HT], top = 0; 
-
 	printCodes(root, arr, top); 
+
+
+	display();
+
+
+	
 }
