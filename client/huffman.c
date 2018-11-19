@@ -4,10 +4,11 @@
 #include <string.h>
 #include "hash.h"
 #include "lista.h"
+#include "client.h"
 // This constant can be avoided by explicitly 
 // calculating height of Huffman Tree 
 #define MAX_TREE_HT 100 
-
+FILE *f;
 // A Huffman tree node 
 struct MinHeapNode { 
 
@@ -173,7 +174,9 @@ void printArr(int arr[], int n,char c)
 	bin[n] = '\0';
 
 	printf("key[%c:%d], val[%s]\n", c,c,bin);
+	fprintf(f,"%d %s\n",c,bin);
 	insert(c, bin);
+
 
 } 
 
@@ -295,9 +298,16 @@ void HuffmanCodes(char data[], int freq[], int size)
 	// Print Huffman codes using 
 	// the Huffman tree built above 
 	int arr[MAX_TREE_HT], top = 0; 
+	
+	char archivo[20] = "h";
+	strcat(archivo,NombreArchivo);
+	f = fopen(archivo,"w");
+
+   	fprintf(f,"%d\n",totalCaracteres);
+
 	printCodes(root, arr, top); 
 
-
+	fclose(f);
 	display();
 
 

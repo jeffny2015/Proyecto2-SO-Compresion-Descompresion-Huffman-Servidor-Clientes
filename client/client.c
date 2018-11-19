@@ -14,6 +14,7 @@
 #include "huffman.h"
 #include "binario.h"
 #include "hash.h"
+#include "client.h"
 
 char ip_servidor[25];
 int *lista_paginas;
@@ -27,7 +28,6 @@ int datos_pendientes = 0;
 FILE *archivoAcomprimir;
 
 int contador = 0;
-
 char *lista_caracter;
 int *lista_apariciones;
 int len_lista;
@@ -87,6 +87,7 @@ void iniciarSocketTCP(char *ip,int puerto){
     int escribir;
     struct sockaddr_in direccion_servidor;
     struct hostent* servidor;
+    totalCaracteres = 0;
 
     socket_cliente = socket(AF_INET, SOCK_STREAM, 0);
     printf("[-] Iniciando Socket\n");
@@ -125,7 +126,7 @@ void iniciarSocketTCP(char *ip,int puerto){
     char *nombreArchivo = strtok(NULL, "|");
     char copiaNombre[15];
     strcpy(copiaNombre, nombreArchivo);
-
+    strcpy(NombreArchivo,nombreArchivo);
     printf("nombre %s\n", nombreArchivo);
 
     printf("[-] Cargando archivo\n");
@@ -154,6 +155,7 @@ void iniciarSocketTCP(char *ip,int puerto){
     int esta;
     while(1) {
       c = fgetc(f);
+      totalCaracteres++;
       if( feof(f) ) {
          break;
       }
@@ -178,6 +180,7 @@ void iniciarSocketTCP(char *ip,int puerto){
     binfile = fopen(cpNombre, "w");
     while(1) {
       c = fgetc(f);
+      
       if(feof(f) ) { 
          break;
       }
