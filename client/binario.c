@@ -12,7 +12,6 @@ void WriteBit (int bit){
     bit_buffer |= (1<<current_bit);
   current_bit--;
   if (current_bit == -1){
-    printf("%u\n",bit_buffer);
     fwrite (&bit_buffer, 1, 1, binfile);
     current_bit = 7;
     bit_buffer = 0;

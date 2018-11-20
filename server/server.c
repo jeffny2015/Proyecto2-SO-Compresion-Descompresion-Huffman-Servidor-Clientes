@@ -30,6 +30,7 @@ long int offset;
 int remain_data;
 struct stat file_stat;
 ssize_t len;
+int tamanio_archivo;
 
 struct InfoAdd{
     char *ip;
@@ -155,11 +156,20 @@ void *conexionClientes(void *param){
     sent_bytes = 0;
     offset = 0;
     remain_data = file_stat.st_size;
-    while (((sent_bytes = sendfile(nuevo_socket, manejar_archivo, &offset, BUFSIZ)) > 0) && (remain_data > 0)){
+
+    bzero(file_size, 256);
+
+    recv(nuevo_socket,file_size,256,0);
+    printf("Recv file_size: %s\n",file_size);
+    bzero(file_size, 256);
+    while (((sent_bytes = sendfile(nuevo_socket, manejar_archivo, &offset, sizeof(remain_data))) > 0) && (remain_data > 0)){
         //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
         remain_data -= sent_bytes;
+        printf("Mierda\n");
+        printf("Snet bytes: %d\n",sent_bytes);
         //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
     }
+    printf("HOla Hola\n");
 
         /*
        if(recv(nuevo_socket, buffer, 256, 0) < 0){
@@ -191,9 +201,86 @@ void *conexionClientes(void *param){
             }
        }*/
 
-    bzero(file_size, 256);
        //imprimirClientes();
     //}
+
+
+    bzero(file_size, sizeof(file_size));
+    printf("BLA\n");
+    recv(nuevo_socket,file_size,sizeof(file_size),0);
+    printf("Recv file_size: %s\n",file_size);
+
+
+
+
+    bzero(file_size, 256);
+    
+
+
+    ssize_t len2;
+    //bzero(buff, 28);
+
+    printf("[-] Recibiendo datos\n");
+
+    /* Recivimo size del archivo y el nombre*/
+
+
+    len2 = recv(nuevo_socket, file_size, sizeof(file_size), 0);
+
+    if(len2>0){
+    printf("recibido\n");
+    }
+
+    printf("contenido %s\n", file_size );
+
+    //split para sacar el nombre y el size del archivo
+
+    char *token = strtok(file_size,"|");
+    tamanio_archivo = atoi(token);
+
+    printf("size %d\n", tamanio_archivo);
+
+    char *nombreArchivo = strtok(NULL, "|");
+    char copiaNombre[15];
+    strcpy(copiaNombre, nombreArchivo);
+    //strcpy(NombreArchivo,nombreArchivo);
+    printf("nombre %s\n", nombreArchivo);
+
+    printf("[-] Cargando archivo\n");
+    FILE *archivoComprimido;
+    archivoComprimido = fopen(nombreArchivo, "w");
+    if (archivoComprimido == NULL)
+    {
+    fprintf(stderr, "Error al abrir el archivo: %s\n", strerror(errno));
+    exit(1);
+    }
+    int datos_pendientes = 0;
+    datos_pendientes = tamanio_archivo;
+    printf("[-] Iniciando Transferencia\n");
+   
+    
+    
+    char datos[datos_pendientes];
+    int tmp = 0;
+    while (((len = recv(nuevo_socket, datos, sizeof(datos_pendientes), 0)) > 0) && (datos_pendientes > 0)){
+        printf("ENtre Entrew\n");
+        fwrite(datos, sizeof(char), len, archivoComprimido);
+        datos_pendientes -= len;
+        
+        fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
+        if (tmp > len)
+        {
+            break;
+        }
+        if (tmp < len)
+        {
+            tmp = len;
+        }
+        
+        printf("len %ld",len);
+    }
+
+    fclose(archivoComprimido);
     close(nuevo_socket);
 }
 

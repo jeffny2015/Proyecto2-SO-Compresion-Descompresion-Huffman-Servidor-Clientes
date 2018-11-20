@@ -11,6 +11,9 @@
 #include <math.h>
 #include <pthread.h>
 #include <errno.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/sendfile.h>
 #include "huffman.h"
 #include "binario.h"
 #include "hash.h"
@@ -23,15 +26,16 @@ int cliente_pagina;
 pthread_t broadcast_rcv;
 int socket_cliente;
 int tamanio_archivo;
-char buffer[BUFSIZ];
+char buffer[256];
+char buffersender[256];
 int datos_pendientes = 0;
 FILE *archivoAcomprimir;
-
+struct stat file_stat;
 int contador = 0;
-char *lista_caracter;
-int *lista_apariciones;
-int len_lista;
-//char buff[28];
+char file_size[256];
+int sent_bytes;
+long int offset;
+int remain_data;
 
 
 int inicializarLista(){
@@ -107,13 +111,13 @@ void iniciarSocketTCP(char *ip,int puerto){
     }
 
     //while(1){
-    bzero(buffer, BUFSIZ);
+    bzero(buffer, sizeof(buffer));
     //bzero(buff, 28);
 
     printf("[-] Recibiendo datos\n");
 
     /* Recivimo size del archivo y el nombre*/
-    recv(socket_cliente, buffer, BUFSIZ, 0);
+    recv(socket_cliente, buffer, sizeof(buffer), 0);
     printf("contenido %s\n", buffer );
 
     //split para sacar el nombre y el size del archivo
@@ -139,13 +143,37 @@ void iniciarSocketTCP(char *ip,int puerto){
 
     datos_pendientes = tamanio_archivo;
     printf("[-] Iniciando Transferencia\n");
-    while (((len = recv(socket_cliente, buffer, BUFSIZ, 0)) > 0) && (datos_pendientes > 0)){
-        fwrite(buffer, sizeof(char), len, archivoAcomprimir);
+    bzero(buffer, sizeof(buffer));
+
+    strcpy(buffersender,"recibiendo recibiendo");
+
+    send(socket_cliente,buffersender,sizeof(buffersender),0);
+    bzero(buffersender, sizeof(buffersender));
+    bzero(buffer, sizeof(buffer));    
+    printf("QUe pasa pasa\n");
+    char datos[datos_pendientes];
+    int tmp = 0;
+    while (((len = recv(socket_cliente, datos, sizeof(datos_pendientes), 0)) > 0) && (datos_pendientes > 0)){
+        printf("ENtre Entrew\n");
+        fwrite(datos, sizeof(char), len, archivoAcomprimir);
         datos_pendientes -= len;
+        
         fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
+        if (tmp > len)
+        {
+            break;
+        }
+        if (tmp < len)
+        {
+            tmp = len;
+        }
+        
+        printf("len %ld",len);
     }
     fclose(archivoAcomprimir);
+    
 
+    bzero(buffer,sizeof(buffer));
     len_lista = inicializarLista();
     //int f;
     FILE *f;
@@ -211,6 +239,65 @@ void iniciarSocketTCP(char *ip,int puerto){
     }
     fclose(f);
     fclose(binfile);
+
+
+
+    bzero(buffersender,sizeof(buffersender));
+    strcpy(buffersender,"Johan Johan");
+    printf("Enviando\n");
+    send(socket_cliente,buffersender,256,0);
+    printf("Se envio\n");
+
+
+
+
+    bzero(datos, sizeof(datos));
+
+    
+    int manejar_archivo;
+    manejar_archivo = open(cpNombre, O_RDONLY);
+
+    if (manejar_archivo < 0){
+    printf("[-] No se pudo leer el archivo: %s\n",cpNombre);
+    exit(1);
+    }
+
+    if (fstat(manejar_archivo, &file_stat) < 0){
+    printf("[-] No se pudo optener la info del archivo: %s\n",cpNombre);
+    exit(1);
+    }
+
+    fprintf(stdout, "[-] Largo del archivo: %ld bytes\n", file_stat.st_size);
+
+    sprintf(file_size, "%ld", file_stat.st_size);
+
+    strcat(file_size, "|");
+    strcat(file_size, cpNombre);
+    printf("info del archivo %s\n", file_size);
+
+    len = send(socket_cliente, file_size, sizeof(file_size), 0);
+    if (len < 0){
+    printf("[-] Error enviando info del archivo");
+    exit(1);
+    }
+
+
+    printf("primer enviando\n" );
+
+    sent_bytes = 0;
+    offset = 0;
+    remain_data = file_stat.st_size;
+    //CODIGO AGREGADO
+
+
+    bzero(file_size, 256);
+    while (((sent_bytes = sendfile(socket_cliente, manejar_archivo, &offset, sizeof(remain_data))) > 0) && (remain_data > 0)){
+        //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
+        remain_data -= sent_bytes;
+        printf("Mierda\n");
+        printf("Snet bytes: %d\n",sent_bytes);
+        //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
+    }
 }
 
 int main(int argc, char const *argv[]){

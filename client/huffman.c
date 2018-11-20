@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "hash.h"
-#include "lista.h"
 #include "client.h"
 // This constant can be avoided by explicitly 
 // calculating height of Huffman Tree 
