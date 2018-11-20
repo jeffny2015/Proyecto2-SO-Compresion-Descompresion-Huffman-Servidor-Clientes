@@ -31,6 +31,7 @@ int remain_data;
 struct stat file_stat;
 ssize_t len;
 int tamanio_archivo;
+int tamanio_archivo2;
 
 struct InfoAdd{
     char *ip;
@@ -165,57 +166,23 @@ void *conexionClientes(void *param){
     while (((sent_bytes = sendfile(nuevo_socket, manejar_archivo, &offset, sizeof(remain_data))) > 0) && (remain_data > 0)){
         //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
         remain_data -= sent_bytes;
-        printf("Mierda\n");
-        printf("Snet bytes: %d\n",sent_bytes);
+        //printf("Mierda\n");
+        //printf("Snet bytes: %d\n",sent_bytes);
         //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
     }
     printf("HOla Hola\n");
 
-        /*
-       if(recv(nuevo_socket, buffer, 256, 0) < 0){
-            printf("Error al recivir paquetes.\n");
-       }else{
-
-            char *token = strtok(buffer,"|");
-            l_e = strcmp(token, "L");
-            // L => para leer  En => para escribir
-            if (!l_e){
-
-                token =  strtok(NULL,"|");
-                indice_pagina_pedido = index_paginas[atoi(token)];
-                bzero(buffer, 256);
-                sprintf(buffer, "%d", indice_pagina_pedido);
-                send(nuevo_socket, buffer, strlen(buffer)+1,0);
-            }else{
-
-                if (!(strcmp(token, "E1"))){
-                    //Quiere escribir, es dueño de la página y tiene la página
-                    //al ser dueño sabe quién tiene copia de las páginas, pide que las borren y la actualiza
-                    //iPagina|UpdatePagina
-                    token =  strtok(NULL,"|");
-                    ipagina = atoi(token);
-                    token =  strtok(NULL,"|");
-                    updatePagina = atoi(token);
-                    index_paginas[ipagina] = updatePagina;
-                    broadcastUpdate(ipagina,updatePagina,ip,puerto);
-            }
-       }*/
-
-       //imprimirClientes();
-    //}
-
 
     bzero(file_size, sizeof(file_size));
     printf("BLA\n");
+
+    //recivimos el archivo binario
+/*
     recv(nuevo_socket,file_size,sizeof(file_size),0);
     printf("Recv file_size: %s\n",file_size);
-
-
-
+    */
 
     bzero(file_size, 256);
-    
-
 
     ssize_t len2;
     //bzero(buff, 28);
@@ -224,8 +191,7 @@ void *conexionClientes(void *param){
 
     /* Recivimo size del archivo y el nombre*/
 
-
-    len2 = recv(nuevo_socket, file_size, sizeof(file_size), 0);
+    len2 += recv(nuevo_socket, file_size, sizeof(file_size), MSG_WAITALL);
 
     if(len2>0){
     printf("recibido\n");
@@ -241,33 +207,38 @@ void *conexionClientes(void *param){
     printf("size %d\n", tamanio_archivo);
 
     char *nombreArchivo = strtok(NULL, "|");
-    char copiaNombre[15];
-    strcpy(copiaNombre, nombreArchivo);
-    //strcpy(NombreArchivo,nombreArchivo);
     printf("nombre %s\n", nombreArchivo);
+
+    char *token2 = strtok(NULL,"|");
+    tamanio_archivo2 = atoi(token2);
+
+    printf("size %d\n", tamanio_archivo2);
+
+    char *nombreArchivo2 = strtok(NULL, "|");
+    printf("nombre %s\n", nombreArchivo2);
 
     printf("[-] Cargando archivo\n");
     FILE *archivoComprimido;
     archivoComprimido = fopen(nombreArchivo, "w");
     if (archivoComprimido == NULL)
     {
-    fprintf(stderr, "Error al abrir el archivo: %s\n", strerror(errno));
+    fprintf(stderr, "Error al abrir el archivo1: %s\n", strerror(errno));
     exit(1);
     }
     int datos_pendientes = 0;
     datos_pendientes = tamanio_archivo;
     printf("[-] Iniciando Transferencia\n");
-   
-    
-    
+
+
+
     char datos[datos_pendientes];
     int tmp = 0;
     while (((len = recv(nuevo_socket, datos, sizeof(datos_pendientes), 0)) > 0) && (datos_pendientes > 0)){
-        printf("ENtre Entrew\n");
+        //printf("ENtre Entrew\n");
         fwrite(datos, sizeof(char), len, archivoComprimido);
         datos_pendientes -= len;
-        
-        fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
+
+      //  fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
         if (tmp > len)
         {
             break;
@@ -276,10 +247,68 @@ void *conexionClientes(void *param){
         {
             tmp = len;
         }
-        
-        printf("len %ld",len);
+
+      //  printf("len %ld",len);
     }
 
+    fclose(archivoComprimido);
+    printf("dasnudnsai %s\n", nombreArchivo2 );
+    //bzero(file_size, 256);
+    ssize_t len3;
+    //bzero(buff, 28);
+
+    printf("[-] Recibiendo datos\n");
+
+    /* Recivimo size del archivo y el nombre*/
+
+    /*
+    recv(nuevo_socket,file_size,sizeof(file_size), MSG_WAITALL);
+    len3 = recv(nuevo_socket, file_size, sizeof(file_size), 0);
+
+    if(len3>0){
+      printf("recibido\n");
+    }
+    */
+
+    //split para sacar el nombre y el size del archivo
+
+
+
+    printf("[-] Cargando archivo\n");
+    printf("nombre del archivo que quiero abrir %s\n", nombreArchivo2);
+    archivoComprimido = fopen(nombreArchivo2, "w");
+    if (archivoComprimido == NULL)
+    {
+    fprintf(stderr, "Error al abrir el archivo2: %s\n", strerror(errno));
+    exit(1);
+    }
+    datos_pendientes = 0;
+    datos_pendientes = tamanio_archivo2;
+    printf("[-] Iniciando Transferencia\n");
+
+
+
+    char datos2[datos_pendientes];
+    tmp = 0;
+    while (((len = recv(nuevo_socket, datos2, sizeof(datos_pendientes), 0)) > 0) && (datos_pendientes > 0)){
+        //printf("ENtre Entrew\n");
+        fwrite(datos2, sizeof(char), len, archivoComprimido);
+        datos_pendientes -= len;
+
+      //  fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
+        if (tmp > len)
+        {
+            break;
+        }
+        if (tmp < len)
+        {
+            tmp = len;
+        }
+
+      //  printf("len %ld",len);
+    }
+    bzero(file_size, 256);
+    printf("termino\n");
     fclose(archivoComprimido);
     close(nuevo_socket);
 }
@@ -399,7 +428,7 @@ void iniciarSocketTCP(char *ip,int puerto,int disponibilidad){
                 if(hilo){
                     printf("[-] Error con el Server al crear el hilo%d\n", hilo);
                 }
-                usleep(100000);
+                sleep(100000);
                 contador_archivo_enviado += 1;
             }
             contador_archivo_enviado = 0;

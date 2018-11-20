@@ -14,21 +14,3 @@ If you use the -l (a lowercase L) option, replace linenumber with the number of 
 
 The split command will give each output file it creates the name prefix with an extension tacked to the end that indicates its order. By default, the split command adds aa to the first output file, proceeding through the alphabet to zz for subsequent files. If you do not specify a prefix, most systems use x.
 Examples
-
-    In this simple example, assume myfile is 3,000 lines long:
-
-      split myfile
-
-    This will output three 1000-line files: xaa, xab, and xac.
-    Working on the same file, this next example is more complex:
-
-      split -l 500 myfile segment
-
-    This will output six 500-line files: segmentaa, segmentab, segmentac, segmentad, segmentae, and segmentaf.
-    Finally, assume myfile is a 160KB file:
-
-      split -b 40k myfile segment
-
-    This will output four 40KB files: segmentaa, segmentab, segmentac, and segmentad.
-
-For more information, consult the man page for the split command. At the Unix prompt, enter:

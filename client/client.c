@@ -31,6 +31,7 @@ char buffersender[256];
 int datos_pendientes = 0;
 FILE *archivoAcomprimir;
 struct stat file_stat;
+struct stat file_stat2;
 int contador = 0;
 char file_size[256];
 int sent_bytes;
@@ -149,7 +150,7 @@ void iniciarSocketTCP(char *ip,int puerto){
 
     send(socket_cliente,buffersender,sizeof(buffersender),0);
     bzero(buffersender, sizeof(buffersender));
-    bzero(buffer, sizeof(buffer));    
+    bzero(buffer, sizeof(buffer));
     printf("QUe pasa pasa\n");
     char datos[datos_pendientes];
     int tmp = 0;
@@ -157,7 +158,7 @@ void iniciarSocketTCP(char *ip,int puerto){
         printf("ENtre Entrew\n");
         fwrite(datos, sizeof(char), len, archivoAcomprimir);
         datos_pendientes -= len;
-        
+
         fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
         if (tmp > len)
         {
@@ -167,11 +168,12 @@ void iniciarSocketTCP(char *ip,int puerto){
         {
             tmp = len;
         }
-        
-        printf("len %ld",len);
+
+        //printf("tmp %d\n", tmp);
+        //printf("len %ld",len);
     }
     fclose(archivoAcomprimir);
-    
+
 
     bzero(buffer,sizeof(buffer));
     len_lista = inicializarLista();
@@ -203,13 +205,19 @@ void iniciarSocketTCP(char *ip,int puerto){
 
     f = fopen(copiaNombre,"r");
     char cpNombre[15];
+    char nombreHuffman[20];
+    //se define el nombre del archivo huffman
+    strcpy(nombreHuffman, "h");
+    strcat(nombreHuffman, copiaNombre);
+    printf("nombre del archivo huffman %s\n", nombreHuffman);
+    //se define el nombre del archivo binario
     strcpy(cpNombre,copiaNombre);
     strcat(cpNombre,".bin");
     binfile = fopen(cpNombre, "w");
     while(1) {
       c = fgetc(f);
-      
-      if(feof(f) ) { 
+
+      if(feof(f) ) {
          break;
       }
       item = search(c);
@@ -242,18 +250,16 @@ void iniciarSocketTCP(char *ip,int puerto){
 
 
 
+    //enviamos el archivo en binario
+/*
     bzero(buffersender,sizeof(buffersender));
-    strcpy(buffersender,"Johan Johan");
+    strcpy(buffersender,"Probando");
     printf("Enviando\n");
     send(socket_cliente,buffersender,256,0);
-    printf("Se envio\n");
-
-
-
+    printf("Se envio\n");*/
 
     bzero(datos, sizeof(datos));
 
-    
     int manejar_archivo;
     manejar_archivo = open(cpNombre, O_RDONLY);
 
@@ -261,6 +267,7 @@ void iniciarSocketTCP(char *ip,int puerto){
     printf("[-] No se pudo leer el archivo: %s\n",cpNombre);
     exit(1);
     }
+
 
     if (fstat(manejar_archivo, &file_stat) < 0){
     printf("[-] No se pudo optener la info del archivo: %s\n",cpNombre);
@@ -275,27 +282,80 @@ void iniciarSocketTCP(char *ip,int puerto){
     strcat(file_size, cpNombre);
     printf("info del archivo %s\n", file_size);
 
-    len = send(socket_cliente, file_size, sizeof(file_size), 0);
-    if (len < 0){
-    printf("[-] Error enviando info del archivo");
+    char datoss[256];
+    strcpy(datoss, file_size);
+
+    int manejar_archivo2 = open(nombreHuffman, O_RDONLY);
+
+    if (manejar_archivo2 < 0){
+    printf("[-] No se pudo leer el archivo: %s\n",nombreHuffman);
     exit(1);
     }
 
+    if (fstat(manejar_archivo2, &file_stat2) < 0){
+    printf("[-] No se pudo optener la info del archivo: %s\n",nombreHuffman);
+    exit(1);
+    }
 
-    printf("primer enviando\n" );
+    fprintf(stdout, "[-] Largo del archivo: %ld bytes\n", file_stat2.st_size);
+
+    sprintf(file_size, "%ld", file_stat2.st_size );
+
+    strcat(file_size, "|");
+    strcat(file_size, nombreHuffman);
+
+    strcat(datoss, "|");
+    strcat(datoss, file_size);
+
+    printf("info del archivo %s\n", datoss);
+    /*len = send(socket_cliente, file_size, sizeof(file_size), 0);
+      if (len < 0){
+        printf("[-] Error enviando info del archivo");
+    exit(1);
+    } */
+
+
+    len = send(socket_cliente, datoss, sizeof(datoss), 0);
+    if (len < 0){
+      printf("[-] Error enviando info del archivo");
+      exit(1);
+    }
+
+
+
 
     sent_bytes = 0;
     offset = 0;
     remain_data = file_stat.st_size;
+    printf("tamanio 1 %d\n", remain_data );
     //CODIGO AGREGADO
 
-
+    tmp = 0;
     bzero(file_size, 256);
     while (((sent_bytes = sendfile(socket_cliente, manejar_archivo, &offset, sizeof(remain_data))) > 0) && (remain_data > 0)){
         //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
         remain_data -= sent_bytes;
-        printf("Mierda\n");
-        printf("Snet bytes: %d\n",sent_bytes);
+        //printf("Snet bytes: %d\n",sent_bytes);
+        //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
+    }
+
+    bzero(datos, sizeof(datos));
+      ///sleep(5);
+
+
+
+    sent_bytes = 0;
+    offset = 0;
+    remain_data = file_stat2.st_size;
+      printf("tamanio 2 %d\n", remain_data );
+    //CODIGO AGREGADO
+
+    tmp = 0;
+    bzero(file_size, 256);
+    while (((sent_bytes = sendfile(socket_cliente, manejar_archivo2, &offset, sizeof(remain_data))) > 0) && (remain_data > 0)){
+        //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
+        remain_data -= sent_bytes;
+        //printf("Snet bytes: %d\n",sent_bytes);
         //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
     }
 }
@@ -329,7 +389,7 @@ int main(){
     int esta;
     while(1) {
       c = fgetc(f);
-      if( feof(f) ) { 
+      if( feof(f) ) {
          break;
       }
       esta = estaEnLista((char)c);
@@ -340,8 +400,8 @@ int main(){
       }
       printf("%c", c);
     }
-    fclose(f);  
-        
+    fclose(f);
+
     imprimirLista();
 
     HuffmanCodes(lista_caracter, lista_apariciones, len_lista);
@@ -351,7 +411,7 @@ int main(){
     binfile = fopen("prueba.bin", "w");
     while(1) {
       c = fgetc(f);
-      if(feof(f) ) { 
+      if(feof(f) ) {
          break;
       }
       item = search(c);
