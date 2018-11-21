@@ -12,5 +12,4 @@ Replace filename with the name of the large file you wish to split. Replace pref
 
 If you use the -l (a lowercase L) option, replace linenumber with the number of lines you'd like in each of the smaller files (the default is 1,000). If you use the -b option, replace bytes with the number of bytes you'd like in each of the smaller files.
 
-The split command will give each output file it creates the name prefix with an extension tacked to the end that indicates its order. By default, the split command adds aa to the first output file, proceeding through the alphabet to zz for subsequent files. If you do not specify a prefix, most systems use x.
-Examples
+The split command will give each output file it creates the name prefix with an extension tacked to

@@ -353,10 +353,10 @@ void iniciarSocketTCP(char *ip,int puerto){
     tmp = 0;
     bzero(file_size, 256);
     while (((sent_bytes = sendfile(socket_cliente, manejar_archivo2, &offset, sizeof(remain_data))) > 0) && (remain_data > 0)){
-        //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
+        fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
         remain_data -= sent_bytes;
         //printf("Snet bytes: %d\n",sent_bytes);
-        //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
+        fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
     }
 }
 

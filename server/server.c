@@ -191,7 +191,7 @@ void *conexionClientes(void *param){
 
     /* Recivimo size del archivo y el nombre*/
 
-    len2 += recv(nuevo_socket, file_size, sizeof(file_size), MSG_WAITALL);
+    len2 = recv(nuevo_socket, file_size, sizeof(file_size), MSG_WAITALL);
 
     if(len2>0){
     printf("recibido\n");
@@ -291,11 +291,11 @@ void *conexionClientes(void *param){
     char datos2[datos_pendientes];
     tmp = 0;
     while (((len = recv(nuevo_socket, datos2, sizeof(datos_pendientes), 0)) > 0) && (datos_pendientes > 0)){
-        //printf("ENtre Entrew\n");
+        fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
         fwrite(datos2, sizeof(char), len, archivoComprimido);
         datos_pendientes -= len;
 
-      //  fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
+        //fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
         if (tmp > len)
         {
             break;
@@ -428,7 +428,7 @@ void iniciarSocketTCP(char *ip,int puerto,int disponibilidad){
                 if(hilo){
                     printf("[-] Error con el Server al crear el hilo%d\n", hilo);
                 }
-                sleep(100000);
+                usleep(100000);
                 contador_archivo_enviado += 1;
             }
             contador_archivo_enviado = 0;
