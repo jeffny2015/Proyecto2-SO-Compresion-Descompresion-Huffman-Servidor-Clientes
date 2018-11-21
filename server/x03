@@ -1,3 +1,0 @@
-use the -b option, replace bytes with the number of bytes you'd like in each of the smaller files.
-
-The split command will give each output file it creates the name prefix with an extension tacked

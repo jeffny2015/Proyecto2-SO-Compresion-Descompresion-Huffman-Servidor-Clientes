@@ -151,15 +151,15 @@ void iniciarSocketTCP(char *ip,int puerto){
     send(socket_cliente,buffersender,sizeof(buffersender),0);
     bzero(buffersender, sizeof(buffersender));
     bzero(buffer, sizeof(buffer));
-    printf("QUe pasa pasa\n");
+    //printf("QUe pasa pasa\n");
     char datos[datos_pendientes];
     int tmp = 0;
     while (((len = recv(socket_cliente, datos, sizeof(datos_pendientes), 0)) > 0) && (datos_pendientes > 0)){
-        printf("ENtre Entrew\n");
+        //printf("ENtre Entrew\n");
         fwrite(datos, sizeof(char), len, archivoAcomprimir);
         datos_pendientes -= len;
 
-        fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
+        //fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
         if (tmp > len)
         {
             break;
@@ -307,6 +307,14 @@ void iniciarSocketTCP(char *ip,int puerto){
     strcat(datoss, "|");
     strcat(datoss, file_size);
 
+    char caracteres_archivo[20];
+
+    sprintf(caracteres_archivo,"%d",totalCaracteres);
+    strcat(datoss, "|");
+    strcat(datoss, caracteres_archivo);
+
+
+
     printf("info del archivo %s\n", datoss);
     /*len = send(socket_cliente, file_size, sizeof(file_size), 0);
       if (len < 0){
@@ -332,9 +340,12 @@ void iniciarSocketTCP(char *ip,int puerto){
 
     tmp = 0;
     bzero(file_size, 256);
-    while (((sent_bytes = sendfile(socket_cliente, manejar_archivo, &offset, sizeof(remain_data))) > 0) && (remain_data > 0)){
+    while (((sent_bytes = sendfile(socket_cliente, manejar_archivo, &offset, remain_data)) > 0) && (remain_data > 0)){
         //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
+        printf("remain_data before: %d\n",remain_data);
         remain_data -= sent_bytes;
+        printf("remain_data after: %d\n",remain_data);
+
         //printf("Snet bytes: %d\n",sent_bytes);
         //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
     }
@@ -352,11 +363,11 @@ void iniciarSocketTCP(char *ip,int puerto){
 
     tmp = 0;
     bzero(file_size, 256);
-    while (((sent_bytes = sendfile(socket_cliente, manejar_archivo2, &offset, sizeof(remain_data))) > 0) && (remain_data > 0)){
-        fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
+    while (((sent_bytes = sendfile(socket_cliente, manejar_archivo2, &offset, remain_data)) > 0) && (remain_data > 0)){
+        //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
         remain_data -= sent_bytes;
         //printf("Snet bytes: %d\n",sent_bytes);
-        fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
+        //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
     }
 }
 

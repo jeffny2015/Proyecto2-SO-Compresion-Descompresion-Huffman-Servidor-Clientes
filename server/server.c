@@ -23,7 +23,7 @@ int len_tabla_clientes = 0;
 char *archivo;
 int manejar_archivo;
 int contador_archivo_enviado = 0;
-
+int totalcaracteres;
 int enviar;
 int sent_bytes;
 long int offset;
@@ -94,6 +94,7 @@ void *escuchandoServidor(){
 void *conexionClientes(void *param){
     //Hilo de cada cliente para que el server se siga comunicando con el cliente
     //printf("[Cliente]Conectado\n");
+    
     int recibir, escribir, nuevo_socket;
     nuevo_socket = *((int*)param);
     char* ip = ipHilo;
@@ -217,6 +218,10 @@ void *conexionClientes(void *param){
     char *nombreArchivo2 = strtok(NULL, "|");
     printf("nombre %s\n", nombreArchivo2);
 
+    char *token3 = strtok(NULL, "|");
+    totalcaracteres = atoi(token3);
+    printf("Caracteres %d\n", totalcaracteres);
+
     printf("[-] Cargando archivo\n");
     FILE *archivoComprimido;
     archivoComprimido = fopen(nombreArchivo, "w");
@@ -233,20 +238,21 @@ void *conexionClientes(void *param){
 
     char datos[datos_pendientes];
     int tmp = 0;
-    while (((len = recv(nuevo_socket, datos, sizeof(datos_pendientes), 0)) > 0) && (datos_pendientes > 0)){
+    while (((len = recv(nuevo_socket, datos, datos_pendientes, 0)) > 0) && (datos_pendientes > 0)){
         //printf("ENtre Entrew\n");
         fwrite(datos, sizeof(char), len, archivoComprimido);
         datos_pendientes -= len;
+        //printf("Hola\n");
 
       //  fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
-        if (tmp > len)
+        /*if (tmp > len)
         {
             break;
         }
         if (tmp < len)
         {
             tmp = len;
-        }
+        }*/
 
       //  printf("len %ld",len);
     }
@@ -290,20 +296,20 @@ void *conexionClientes(void *param){
 
     char datos2[datos_pendientes];
     tmp = 0;
-    while (((len = recv(nuevo_socket, datos2, sizeof(datos_pendientes), 0)) > 0) && (datos_pendientes > 0)){
-        fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
+    while (((len = recv(nuevo_socket, datos2, datos_pendientes, 0)) > 0) && (datos_pendientes > 0)){
+        //fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
         fwrite(datos2, sizeof(char), len, archivoComprimido);
         datos_pendientes -= len;
 
         //fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
-        if (tmp > len)
+        /*if (tmp > len)
         {
             break;
         }
         if (tmp < len)
         {
             tmp = len;
-        }
+        }*/
 
       //  printf("len %ld",len);
     }
