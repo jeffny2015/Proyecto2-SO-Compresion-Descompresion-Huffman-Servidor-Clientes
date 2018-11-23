@@ -8,7 +8,7 @@ SALIDA = ejecutable
 #regla que se ejecuta por defecto
 
 all:
-	gcc $(BANDERAS) -pthread server.c -o $(SALIDA)
+	gcc $(BANDERAS) -pthread server.c frecuencia.c -o $(SALIDA)
 
 #regla especial para limpiar
 

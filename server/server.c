@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/sendfile.h>
+#include "frecuencia.h"
 
 pthread_t interrupt,detener_servidor;
 socklen_t len_dir;
