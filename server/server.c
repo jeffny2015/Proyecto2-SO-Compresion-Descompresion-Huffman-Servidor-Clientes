@@ -32,6 +32,7 @@ struct stat file_stat;
 ssize_t len;
 int tamanio_archivo;
 int tamanio_archivo2;
+int archivos_por_recibir;
 
 struct InfoAdd{
     char *ip;
@@ -94,7 +95,7 @@ void *escuchandoServidor(){
 void *conexionClientes(void *param){
     //Hilo de cada cliente para que el server se siga comunicando con el cliente
     //printf("[Cliente]Conectado\n");
-    
+
     int recibir, escribir, nuevo_socket;
     nuevo_socket = *((int*)param);
     char* ip = ipHilo;
@@ -277,8 +278,13 @@ void *conexionClientes(void *param){
     */
 
     //split para sacar el nombre y el size del archivo
-
-
+    //sleep(1);
+    archivos_por_recibir -= 1;
+    printf("espero algo \n");
+    while(archivos_por_recibir > 0){
+      //printf("espero ? %d\n", archivos_por_recibir);
+    };
+    printf("todos los archivos de los clientes han sido recividos\n");
 
     printf("[-] Cargando archivo\n");
     printf("nombre del archivo que quiero abrir %s\n", nombreArchivo2);
@@ -392,6 +398,8 @@ void iniciarSocketTCP(char *ip,int puerto,int disponibilidad){
         if (strcmp(quiere,"y") == 0){
 
             printf("[-] Tamanio del archivo %ld dividido entre %d clientes\n", file_stat.st_size, len_tabla_clientes);
+
+            archivos_por_recibir = len_tabla_clientes;
             bytesCliente = file_stat.st_size / len_tabla_clientes;
 
             //distribuimos correctamente los archivos
