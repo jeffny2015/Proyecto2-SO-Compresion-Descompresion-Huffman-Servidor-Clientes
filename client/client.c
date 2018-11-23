@@ -303,15 +303,7 @@ void iniciarSocketTCP(char *ip,int puerto){
     fclose(f);
     fclose(binfile);
 
-
-
     //enviamos el archivo en binario
-/*
-    bzero(buffersender,sizeof(buffersender));
-    strcpy(buffersender,"Probando");
-    printf("Enviando\n");
-    send(socket_cliente,buffersender,256,0);
-    printf("Se envio\n");*/
 
     bzero(datos, sizeof(datos));
 
@@ -369,22 +361,13 @@ void iniciarSocketTCP(char *ip,int puerto){
     strcat(datoss, caracteres_archivo);
 
 
-
     printf("info del archivo %s\n", datoss);
-    /*len = send(socket_cliente, file_size, sizeof(file_size), 0);
-      if (len < 0){
-        printf("[-] Error enviando info del archivo");
-    exit(1);
-    } */
-
 
     len = send(socket_cliente, datoss, sizeof(datoss), 0);
     if (len < 0){
       printf("[-] Error enviando info del archivo");
       exit(1);
     }
-
-
 
 
     sent_bytes = 0;
@@ -406,8 +389,6 @@ void iniciarSocketTCP(char *ip,int puerto){
     }
 
     bzero(datos, sizeof(datos));
-      ///sleep(5);
-
 
 
     sent_bytes = 0;
@@ -442,72 +423,3 @@ int main(int argc, char const *argv[]){
     iniciarSocketTCP(ip,puerto);
     return 0;
 }
-
-
-/*
-int main(){
-
-    len_lista = inicializarLista();
-    //int f;
-    FILE *f =fopen("archivo.txt","r");
-    //f = open(, O_RDONLY);
-    int c;
-    int esta;
-    while(1) {
-      c = fgetc(f);
-      if( feof(f) ) {
-         break;
-      }
-      esta = estaEnLista((char)c);
-      if (esta != -1){
-        aumentarAparicion(esta);
-      }else{
-        agregarElemento((char)c);
-      }
-      printf("%c", c);
-    }
-    fclose(f);
-
-    imprimirLista();
-
-    HuffmanCodes(lista_caracter, lista_apariciones, len_lista);
-
-
-    f = fopen("archivo.txt","r");
-    binfile = fopen("prueba.bin", "w");
-    while(1) {
-      c = fgetc(f);
-      if(feof(f) ) {
-         break;
-      }
-      item = search(c);
-      if(item != NULL) {
-        for (int i = 0; i < strlen(item->data); i++) {
-            if (item->data[i] == '1')
-            {
-                WriteBit(1);
-            }else{
-                WriteBit(0);
-            }
-            contador++;
-
-            if (contador == 8){
-                contador = 0;
-            }
-        }
-      } else {
-       printf("Element not found\n");
-      }
-    }
-
-    int restantes = 8 - contador;
-    if (restantes > 0){
-        for (int i = 0; i < restantes; i++)
-        {
-            WriteBit(0);
-        }
-    }
-    fclose(f);
-    fclose(binfile);
-    return 0;
-}*/

@@ -9,11 +9,11 @@ int inicializarLista(){
     return 0;
 }
 
-int agregarElemento(char caracter){
+int agregarElemento(char caracter, int cantidad){
     lista_caracter = realloc(lista_caracter,(len_lista+1)*sizeof(char));
     lista_apariciones = realloc(lista_apariciones,(len_lista+1)*sizeof(int));
     lista_caracter[len_lista] = caracter;
-    lista_apariciones[len_lista] = 1;
+    lista_apariciones[len_lista] = cantidad;
     len_lista++;
     return 0;
 }
@@ -26,10 +26,12 @@ int estaEnLista(char caracter){
     }
     return -1;
 }
-int aumentarAparicion(int i){
-    lista_apariciones[i]++;
+
+int aumentarAparicion(int i, int cantidad){
+    lista_apariciones[i] += cantidad;
     return 0;
 }
+
 int imprimirLista(){
     for (int i = 0; i < len_lista; i++){
         printf("Caracter: %c  => Cantidad: %d\n",lista_caracter[i],lista_apariciones[i]);

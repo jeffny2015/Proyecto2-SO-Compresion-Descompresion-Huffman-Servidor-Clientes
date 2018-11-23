@@ -102,7 +102,7 @@ void *conexionClientes(void *param){
     char* ip = ipHilo;
     int puerto = puertoHilo;
     char file_size[256];
-    //while(1){
+
     while(1){
         if (enviar){
             break;
@@ -120,7 +120,6 @@ void *conexionClientes(void *param){
 
     sprintf(num, "%d", contador_archivo_enviado);
     strcat(nombre_archivo, num);
-
 
     printf("%s\n", nombre_archivo);
     printf("%d\n", contador_archivo_enviado);
@@ -142,12 +141,7 @@ void *conexionClientes(void *param){
     fprintf(stdout, "[-] Largo del archivo: %ld bytes\n", file_stat.st_size);
 
     sprintf(file_size, "%ld", file_stat.st_size);
-    /*
-    len = send(nuevo_socket, nombre_archivo, sizeof(nombre_archivo), 0);
-    if (len < 0){
-        printf("[-] Error enviando el nombre del archivo");
-        exit(1);
-    }*/
+
     strcat(file_size, "|");
     strcat(file_size, nombre_archivo);
 
@@ -167,30 +161,23 @@ void *conexionClientes(void *param){
     printf("Recv file_size: %s\n",file_size);
     bzero(file_size, 256);
     while (((sent_bytes = sendfile(nuevo_socket, manejar_archivo, &offset, sizeof(remain_data))) > 0) && (remain_data > 0)){
-        //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
         remain_data -= sent_bytes;
-        //printf("Mierda\n");
-        //printf("Snet bytes: %d\n",sent_bytes);
-        //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
+        //printf("Send bytes: %d\n",sent_bytes);
     }
     printf("HOla Hola\n");
-
 
 
     /********/
 
     bzero(file_size, 256);
 
-    ssize_t len5;
-    //bzero(buff, 28);
-
     printf("[-] Recibiendo datos\n");
 
     /* Recivimo size del archivo y el nombre*/
 
-    len5 = recv(nuevo_socket, file_size, 256, MSG_WAITALL);
+    len = recv(nuevo_socket, file_size, 256, MSG_WAITALL);
 
-    if(len5>0){
+    if(len>0){
     printf("recibido\n");
     }
 
@@ -221,10 +208,10 @@ void *conexionClientes(void *param){
 
     char datos5[datos_pendientes5];
     int tmp5 = 0;
-    while (((len5 = recv(nuevo_socket, datos5, datos_pendientes5, 0)) > 0) && (datos_pendientes5 > 0)){
+    while (((len = recv(nuevo_socket, datos5, datos_pendientes5, 0)) > 0) && (datos_pendientes5 > 0)){
         //printf("ENtre Entrew\n");
-        fwrite(datos5, sizeof(char), len5, archivoComprimido5);
-        datos_pendientes5 -= len5;
+        fwrite(datos5, sizeof(char), len, archivoComprimido5);
+        datos_pendientes5 -= len;
         //printf("Hola\n");
 
       //  fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
@@ -242,28 +229,68 @@ void *conexionClientes(void *param){
 
     fclose(archivoComprimido5);
     /******/
-    
-    printf("BLA\n");
+
+    //bloqueo
+
+
+    printf("[-] Ingresando valores a la lista de frecuencias \n" );
+    //FILE *f;
+    archivoComprimido5 =fopen(nombreArchivo5,"r");
+    //f = open(, O_RDONLY);
+    int c;
+    int esta;
+    char buf[1024];
+    int cant;
+    char letra;
+
+    while (fgets(buf, sizeof(buf), archivoComprimido5) != NULL)
+    {
+      buf[strlen(buf) - 1] = '\0'; // eat the newline fgets() stores
+      printf("%s\n", buf);
+      char *caracter = strtok(buf," ");
+      letra = atoi(caracter);
+      printf("caracter: %c\n", letra);
+
+      char *cantidad = strtok(NULL, " ");
+      cant = atoi(cantidad);
+      printf("cantidad %d\n", cant);
+
+      esta = estaEnLista((char)letra);
+      if (esta != -1){
+        aumentarAparicion(esta, cant);
+      }else{
+        agregarElemento((char)letra, cant);
+      }
+
+    }
+
+    fclose(archivoComprimido5);
+    printf("[-] Lista de frecuencias\n" );
+    imprimirLista();
+
+    printf("[-] Fin lista de frecuencias\n");
+
+
+    archivos_por_recibir -= 1;
+    printf("espero algo \n");
+    while(archivos_por_recibir > 0){
+      //printf("espero ? %d\n", archivos_por_recibir);
+    };
+
+    printf("[-] Todos los archivos de frecuencias han sido recividos\n");
 
     //recivimos el archivo binario
-/*
-    recv(nuevo_socket,file_size,sizeof(file_size),0);
-    printf("Recv file_size: %s\n",file_size);
-    */
 
     bzero(file_size, 256);
-
-    ssize_t len2;
-    //bzero(buff, 28);
 
     printf("[-] Recibiendo datos\n");
 
     /* Recivimo size del archivo y el nombre*/
 
-    len2 = recv(nuevo_socket, file_size, sizeof(file_size), MSG_WAITALL);
+    len = recv(nuevo_socket, file_size, sizeof(file_size), MSG_WAITALL);
 
-    if(len2>0){
-    printf("recibido\n");
+    if(len>0){
+      printf("recibido\n");
     }
 
     printf("contenido %s\n", file_size );
@@ -302,12 +329,9 @@ void *conexionClientes(void *param){
     datos_pendientes = tamanio_archivo;
     printf("[-] Iniciando Transferencia\n");
 
-
-
     char datos[datos_pendientes];
     int tmp = 0;
     while (((len = recv(nuevo_socket, datos, datos_pendientes, 0)) > 0) && (datos_pendientes > 0)){
-        //printf("ENtre Entrew\n");
         fwrite(datos, sizeof(char), len, archivoComprimido);
         datos_pendientes -= len;
         //printf("Hola\n");
@@ -326,32 +350,10 @@ void *conexionClientes(void *param){
     }
 
     fclose(archivoComprimido);
-    printf("dasnudnsai %s\n", nombreArchivo2 );
+    printf("Nombre %s\n", nombreArchivo2 );
     //bzero(file_size, 256);
-    ssize_t len3;
-    //bzero(buff, 28);
 
     printf("[-] Recibiendo datos\n");
-
-    /* Recivimo size del archivo y el nombre*/
-
-    /*
-    recv(nuevo_socket,file_size,sizeof(file_size), MSG_WAITALL);
-    len3 = recv(nuevo_socket, file_size, sizeof(file_size), 0);
-
-    if(len3>0){
-      printf("recibido\n");
-    }
-    */
-
-    //split para sacar el nombre y el size del archivo
-    //sleep(1);
-    archivos_por_recibir -= 1;
-    printf("espero algo \n");
-    while(archivos_por_recibir > 0){
-      //printf("espero ? %d\n", archivos_por_recibir);
-    };
-    printf("todos los archivos de los clientes han sido recividos\n");
 
     printf("[-] Cargando archivo\n");
     printf("nombre del archivo que quiero abrir %s\n", nombreArchivo2);
@@ -363,9 +365,8 @@ void *conexionClientes(void *param){
     }
     datos_pendientes = 0;
     datos_pendientes = tamanio_archivo2;
+
     printf("[-] Iniciando Transferencia\n");
-
-
 
     char datos2[datos_pendientes];
     tmp = 0;
@@ -443,7 +444,7 @@ void iniciarSocketTCP(char *ip,int puerto,int disponibilidad){
 
     fprintf(stdout, "[-] Largo del archivo: %ld bytes\n", file_stat.st_size);
 
-
+    len_lista = inicializarLista();
     //detener = 0;
     //pthread_create(&detener_servidor,NULL,escuchandoServidor,NULL);
 
