@@ -1,0 +1,7 @@
+Split large files into a number of smaller files in Unix
+
+To split large files into smaller files in Unix, use the split command. At the Unix prompt, enter
+
+  split [options] filename prefix
+
+Replace filename with the name of the large file you wish to split. Replace prefix with the name you wish to give the small output files. You can exclude [options], or replace it with either of the foll

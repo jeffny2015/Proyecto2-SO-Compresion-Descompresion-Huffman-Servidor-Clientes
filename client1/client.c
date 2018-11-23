@@ -371,14 +371,6 @@ void iniciarSocketTCP(char *ip,int puerto){
     
     bzero(datos, sizeof(datos));
 
-
-    
-
-
-
-
-    
-    /*
     int manejar_archivo;
     manejar_archivo = open(cpNombre, O_RDONLY);
 
@@ -486,7 +478,7 @@ void iniciarSocketTCP(char *ip,int puerto){
         remain_data -= sent_bytes;
         //printf("Snet bytes: %d\n",sent_bytes);
         //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
-    }*/
+    }
     
 }
 

@@ -161,7 +161,13 @@ void *conexionClientes(void *param){
     recv(nuevo_socket,file_size,256,0);
     printf("Recv file_size: %s\n",file_size);
     bzero(file_size, 256);
-    while (((sent_bytes = sendfile(nuevo_socket, manejar_archivo, &offset, sizeof(remain_data))) > 0) && (remain_data > 0)){
+    while (remain_data > 0){
+        sent_bytes = sendfile(nuevo_socket, manejar_archivo, &offset, remain_data);
+        if (sent_bytes <= 0)
+        {
+            break;
+        }
+
         remain_data -= sent_bytes;
         //printf("Send bytes: %d\n",sent_bytes);
     }
@@ -209,21 +215,19 @@ void *conexionClientes(void *param){
 
     char datos5[datos_pendientes5];
     int tmp5 = 0;
-    while (((len = recv(nuevo_socket, datos5, datos_pendientes5, 0)) > 0) && (datos_pendientes5 > 0)){
+    while (datos_pendientes5 > 0){
         //printf("ENtre Entrew\n");
+        len = recv(nuevo_socket, datos5, datos_pendientes5, 0);
+        if (len <= 0)
+        {
+            break;
+        }
         fwrite(datos5, sizeof(char), len, archivoComprimido5);
         datos_pendientes5 -= len;
         //printf("Hola\n");
 
       //  fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
-        /*if (tmp > len)
-        {
-            break;
-        }
-        if (tmp < len)
-        {
-            tmp = len;
-        }*/
+        
 
       //  printf("len %ld",len);
     }
@@ -319,7 +323,12 @@ void *conexionClientes(void *param){
     sent_bytes = 0;
     offset = 0;
     remain_data = file_stat.st_size;
-    while (((sent_bytes = sendfile(nuevo_socket, manejar_archivo, &offset, sizeof(remain_data))) > 0) && (remain_data > 0)){
+    while (remain_data > 0){
+        sent_bytes = sendfile(nuevo_socket, manejar_archivo, &offset, remain_data);
+        if (sent_bytes <= 0)
+        {
+            break;
+        }
         remain_data -= sent_bytes;
         //printf("Send bytes: %d\n",sent_bytes);
     }
@@ -341,8 +350,8 @@ void *conexionClientes(void *param){
     printf("[-] Recibiendo datos\n");
 
     // Recivimo size del archivo y el nombre
-    /*
-    len = recv(nuevo_socket, file_size, sizeof(file_size), MSG_OOB);
+    
+    len = recv(nuevo_socket, file_size, sizeof(file_size), 0);//MSG_OOB);
 
     if(len>0){
       printf("recibido\n");
@@ -386,23 +395,21 @@ void *conexionClientes(void *param){
 
     char datos[datos_pendientes];
     int tmp = 0;
-    while (((len = recv(nuevo_socket, datos, datos_pendientes, 0)) > 0) && (datos_pendientes > 0)){
+    while (datos_pendientes > 0){
+        len = recv(nuevo_socket, datos, datos_pendientes, 0);
+        if (len <= 0)
+        {
+            break;
+        }
         fwrite(datos, sizeof(char), len, archivoComprimido);
         datos_pendientes -= len;
         //printf("Hola\n");
 
       //  fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
-        /*if (tmp > len)
-        {
-            break;
-        }
-        if (tmp < len)
-        {
-            tmp = len;
-        }*/
+        
 
       //  printf("len %ld",len);
-    /*}
+    }
 
     fclose(archivoComprimido);
     printf("Nombre %s\n", nombreArchivo2 );
@@ -425,25 +432,23 @@ void *conexionClientes(void *param){
 
     char datos2[datos_pendientes];
     tmp = 0;
-    while (((len = recv(nuevo_socket, datos2, datos_pendientes, 0)) > 0) && (datos_pendientes > 0)){
+    while (datos_pendientes > 0){
         //fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
+        len = recv(nuevo_socket, datos2, datos_pendientes, 0);
+        if (len <= 0)
+        {
+            break;
+        }
         fwrite(datos2, sizeof(char), len, archivoComprimido);
         datos_pendientes -= len;
 
         //fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
-        /*if (tmp > len)
-        {
-            break;
-        }
-        if (tmp < len)
-        {
-            tmp = len;
-        }*/
+       
 
       //  printf("len %ld",len);
-    //}
+    }
     bzero(file_size, 256);
-    printf("termino\n");
+    printf("termino\n");*/
     //fclose(archivoComprimido);
     close(nuevo_socket);
 }
