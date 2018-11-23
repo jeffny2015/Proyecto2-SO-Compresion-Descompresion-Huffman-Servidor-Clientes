@@ -175,7 +175,73 @@ void *conexionClientes(void *param){
     printf("HOla Hola\n");
 
 
-    bzero(file_size, sizeof(file_size));
+
+    /********/
+
+    bzero(file_size, 256);
+
+    ssize_t len5;
+    //bzero(buff, 28);
+
+    printf("[-] Recibiendo datos\n");
+
+    /* Recivimo size del archivo y el nombre*/
+
+    len5 = recv(nuevo_socket, file_size, 256, MSG_WAITALL);
+
+    if(len5>0){
+    printf("recibido\n");
+    }
+
+    printf("contenido %s\n", file_size );
+
+    //split para sacar el nombre y el size del archivo
+
+    char *token5 = strtok(file_size,"|");
+    tamanio_archivo = atoi(token5);
+
+    printf("size %d\n", tamanio_archivo);
+
+    char *nombreArchivo5 = strtok(NULL, "|");
+    printf("nombre %s\n", nombreArchivo5);
+
+    FILE *archivoComprimido5;
+    archivoComprimido5 = fopen(nombreArchivo5, "w");
+    if (archivoComprimido5 == NULL)
+    {
+    fprintf(stderr, "Error al abrir el archivo1: %s\n", strerror(errno));
+    exit(1);
+    }
+    int datos_pendientes5 = 0;
+    datos_pendientes5 = tamanio_archivo;
+    printf("[-] Iniciando Transferencia\n");
+
+
+
+    char datos5[datos_pendientes5];
+    int tmp5 = 0;
+    while (((len5 = recv(nuevo_socket, datos5, datos_pendientes5, 0)) > 0) && (datos_pendientes5 > 0)){
+        //printf("ENtre Entrew\n");
+        fwrite(datos5, sizeof(char), len5, archivoComprimido5);
+        datos_pendientes5 -= len5;
+        //printf("Hola\n");
+
+      //  fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
+        /*if (tmp > len)
+        {
+            break;
+        }
+        if (tmp < len)
+        {
+            tmp = len;
+        }*/
+
+      //  printf("len %ld",len);
+    }
+
+    fclose(archivoComprimido5);
+    /******/
+    
     printf("BLA\n");
 
     //recivimos el archivo binario

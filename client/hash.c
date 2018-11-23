@@ -31,8 +31,7 @@ struct DataItem *search(int key) {
       //wrap around the table
       hashIndex %= size;
    }        
-	
-   return NULL;        
+   return NULL;      
 }
 
 void insert(int key,char data[]) {

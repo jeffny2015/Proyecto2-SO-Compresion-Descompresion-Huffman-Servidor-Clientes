@@ -301,7 +301,7 @@ void HuffmanCodes(char data[], int freq[], int size)
 	char archivo[20] = "h";
 	strcat(archivo,NombreArchivo);
 	f = fopen(archivo,"w");
-   	fprintf(f,"%d\n",totalCaracteres);
+   	fprintf(f,"%d %d\n",totalCaracteres,len);
 
 	printCodes(root, arr, top); 
 

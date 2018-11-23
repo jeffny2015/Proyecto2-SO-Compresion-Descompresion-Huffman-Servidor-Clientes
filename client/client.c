@@ -201,6 +201,61 @@ void iniciarSocketTCP(char *ip,int puerto){
     fclose(f);
 
     imprimirLista();
+
+    FILE *ff;
+    char frecuencia_f[20];
+    strcpy(frecuencia_f,"f");
+    strcat(frecuencia_f,copiaNombre);
+    ff = fopen(frecuencia_f,"w");
+
+
+    //Escribimos el largo
+    //fprintf(ff,"%d\n",len_lista);
+    for (int j = 0; j < len_lista; j++){
+        fprintf(ff,"%d %d\n",lista_caracter[j],lista_apariciones[j]);
+    }
+    fclose(ff);
+
+    /************************************/
+
+    int manejar_archivo1;
+    manejar_archivo1 = open(frecuencia_f, O_RDONLY);
+
+
+    if (fstat(manejar_archivo1, &file_stat) < 0){
+        printf("[-] No se pudo optener la info del archivo: %s\n",copiaNombre);
+        exit(1);
+    }
+
+    fprintf(stdout, "[-] Largo del archivo: %ld bytes\n", file_stat.st_size);
+    bzero(file_size,256);
+    sprintf(file_size, "%ld", file_stat.st_size);
+
+    strcat(file_size, "|");
+    strcat(file_size, frecuencia_f);
+    printf("info del archivo %s\n", file_size);
+
+    len = send(socket_cliente, file_size, 256, 0);
+
+    sent_bytes = 0;
+    offset = 0;
+    remain_data = file_stat.st_size;
+    printf("tamanio 1 %d\n", remain_data );
+    //CODIGO AGREGADO
+
+    tmp = 0;
+    bzero(file_size, 256);
+    while (((sent_bytes = sendfile(socket_cliente, manejar_archivo1, &offset, remain_data)) > 0) && (remain_data > 0)){
+        //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
+        printf("remain_data before: %d\n",remain_data);
+        remain_data -= sent_bytes;
+        printf("remain_data after: %d\n",remain_data);
+
+        //printf("Snet bytes: %d\n",sent_bytes);
+        //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
+    }
+    close(manejar_archivo1);
+    /************************************/
     HuffmanCodes(lista_caracter, lista_apariciones, len_lista);
 
     f = fopen(copiaNombre,"r");
