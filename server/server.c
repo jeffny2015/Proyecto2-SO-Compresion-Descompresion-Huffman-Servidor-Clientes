@@ -12,6 +12,7 @@
 #include <fcntl.h>
 #include <sys/sendfile.h>
 #include "frecuencia.h"
+#include "huffman.h"
 
 pthread_t interrupt,detener_servidor;
 socklen_t len_dir;
@@ -278,6 +279,9 @@ void *conexionClientes(void *param){
     };
 
     printf("[-] Todos los archivos de frecuencias han sido recividos\n");
+
+    //Se crea el arbol de huffman y el archivo con los valores comprimidos
+    HuffmanCodes(lista_caracter, lista_apariciones, len_lista);
 
     //recivimos el archivo binario
 
