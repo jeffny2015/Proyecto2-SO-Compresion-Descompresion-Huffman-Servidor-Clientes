@@ -154,7 +154,7 @@ void iniciarSocketTCP(char *ip,int puerto){
     //printf("QUe pasa pasa\n");
     char datos[datos_pendientes];
     int tmp = 0;
-    
+
 
 
     while (datos_pendientes > 0){
@@ -300,39 +300,14 @@ void iniciarSocketTCP(char *ip,int puerto){
         fwrite(datos2, sizeof(char), len, archivoComprimido5);
         datos_pendientes -= len;
         //printf("Hola\n");
-
-      //  fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
-        /*if (tmp > len)
-        {
-            break;
-        }
-        if (tmp < len)
-        {
-            tmp = len;
-        }*/
-
-      //  printf("len %ld",len);
     }
 
     fclose(archivoComprimido5);
     printf("Se recivio el archivo con los valores huffman\n");
 
-
-
-
-
-
-
-
-
-
     //enviamos el archivo en binario
-    
     bzero(datos, sizeof(datos));
 
-    /******/
-    /****/
-    printf("Pordonde vamos\n");
     dummyItem = (struct DataItem*) malloc(sizeof(struct DataItem));
     strcpy(dummyItem->data,"-1");
     dummyItem->key = -1;
@@ -362,7 +337,6 @@ void iniciarSocketTCP(char *ip,int puerto){
     setSize(hash_len);
 
     while(fgets(buffer6, sizeof(buffer6), f) != NULL){
-      printf("Dentro del while\n");
       token6 = strtok(buffer6," ");
       key = atoi(token6);
       //key = atoi(token);
@@ -375,9 +349,7 @@ void iniciarSocketTCP(char *ip,int puerto){
     }
 
     bzero(tmp6,256);
-    printf("Pordonde vamos aqui\n");
     /**-*/
-    printf("NONONONOONONONONONOONONONONONONO\n");
     f = fopen(copiaNombre,"r");
     char cpNombre[15];
     char nombreHuffman[20];
@@ -398,17 +370,17 @@ void iniciarSocketTCP(char *ip,int puerto){
       item = search(c);
       if(item != NULL) {
         for (int i = 0; i < strlen(item->data); i++) {
-            if (item->data[i] == '1')
-            {
-                WriteBit(1);
-            }else{
-                WriteBit(0);
-            }
-            contador++;
+          if (item->data[i] == '1')
+          {
+              WriteBit(1);
+          }else{
+              WriteBit(0);
+          }
+          contador++;
 
-            if (contador == 8){
-                contador = 0;
-            }
+          if (contador == 8){
+              contador = 0;
+          }
         }
       }
     }
@@ -422,17 +394,7 @@ void iniciarSocketTCP(char *ip,int puerto){
     }
     fclose(f);
     fclose(binfile);
-    printf("QUQUQUQUQUQUQUQUQU\n");
 
-
-
-
-
-
-
-
-
-    
     int manejar_archivo;
     manejar_archivo = open(cpNombre, O_RDONLY);
 
@@ -440,7 +402,6 @@ void iniciarSocketTCP(char *ip,int puerto){
     printf("[-] No se pudo leer el archivo: %s\n",cpNombre);
     exit(1);
     }
-
 
     if (fstat(manejar_archivo, &file_stat) < 0){
     printf("[-] No se pudo optener la info del archivo: %s\n",cpNombre);
@@ -453,39 +414,10 @@ void iniciarSocketTCP(char *ip,int puerto){
 
     strcat(file_size, "|");
     strcat(file_size, cpNombre);
-    printf("info del archivo %s\n", file_size);
+    //printf("info del archivo %s\n", file_size);
 
     char datoss[256];
     strcpy(datoss, file_size);
-
-    int manejar_archivo2 = open(nombreHuffman, O_RDONLY);
-
-    if (manejar_archivo2 < 0){
-    printf("[-] No se pudo leer el archivo: %s\n",nombreHuffman);
-    exit(1);
-    }
-
-    if (fstat(manejar_archivo2, &file_stat2) < 0){
-    printf("[-] No se pudo optener la info del archivo: %s\n",nombreHuffman);
-    exit(1);
-    }
-
-    fprintf(stdout, "[-] Largo del archivo: %ld bytes\n", file_stat2.st_size);
-
-    sprintf(file_size, "%ld", file_stat2.st_size );
-
-    strcat(file_size, "|");
-    strcat(file_size, nombreHuffman);
-
-    strcat(datoss, "|");
-    strcat(datoss, file_size);
-
-    char caracteres_archivo[20];
-
-    sprintf(caracteres_archivo,"%d",totalCaracteres);
-    strcat(datoss, "|");
-    strcat(datoss, caracteres_archivo);
-
 
     printf("info del archivo %s\n", datoss);
 
@@ -494,7 +426,6 @@ void iniciarSocketTCP(char *ip,int puerto){
       printf("[-] Error enviando info del archivo");
       exit(1);
     }
-
 
     sent_bytes = 0;
     offset = 0;
@@ -505,43 +436,17 @@ void iniciarSocketTCP(char *ip,int puerto){
     tmp = 0;
     bzero(file_size, 256);
     while (remain_data > 0){
-        //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
-        //printf("remain_data before: %d\n",remain_data);
         sent_bytes = sendfile(socket_cliente, manejar_archivo, &offset, remain_data);
         if (sent_bytes <= 0)
         {
             break;
         }
         remain_data -= sent_bytes;
-        //printf("remain_data after: %d\n",remain_data);
 
-        //printf("Snet bytes: %d\n",sent_bytes);
-        //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
     }
 
     bzero(datos, sizeof(datos));
 
-
-    /*sent_bytes = 0;
-    offset = 0;
-    remain_data = file_stat2.st_size;
-      printf("tamanio 2 %d\n", remain_data );
-    //CODIGO AGREGADO
-
-    tmp = 0;
-    bzero(file_size, 256);
-    while (remain_data > 0){
-        //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
-        sent_bytes = sendfile(socket_cliente, manejar_archivo2, &offset, remain_data);
-        if (sent_bytes <= 0)
-        {
-            break;
-        }
-        remain_data -= sent_bytes;
-        //printf("Snet bytes: %d\n",sent_bytes);
-        //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
-    }*/
-    
 }
 
 int main(int argc, char const *argv[]){
