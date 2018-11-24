@@ -287,7 +287,7 @@ void iniciarSocketTCP(char *ip,int puerto){
     }
     int datos_pendientes = 0;
     datos_pendientes = tamanio_archivo;
-    printf("[-] Iniciando Transferencia\n");
+    printf("[-] Iniciando Transferencia aqui\n");
 
     char datos2[datos_pendientes];
     tmp = 0;
@@ -462,6 +462,7 @@ int main(int argc, char const *argv[]){
     //sudo kill -9 PID
     char *ip;
     int puerto = 4444;
+    system("rm -f valoresHuffman");
 
     printf("[-] Abriendo: %s\n",nombre);
     iniciarConfig(nombre);

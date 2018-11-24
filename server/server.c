@@ -248,11 +248,11 @@ void *conexionClientes(void *param){
       printf("%s\n", buf);
       char *caracter = strtok(buf," ");
       letra = atoi(caracter);
-      printf("caracter: %c\n", letra);
+      //printf("caracter: %c\n", letra);
 
       char *cantidad = strtok(NULL, " ");
       cant = atoi(cantidad);
-      printf("cantidad %d\n", cant);
+      //printf("cantidad %d\n", cant);
 
       esta = estaEnLista((char)letra);
       if (esta != -1){
@@ -358,7 +358,7 @@ void *conexionClientes(void *param){
     char *nombreArchivo = strtok(NULL, "|");
     printf("nombre %s\n", nombreArchivo);
 
-    totalcaracteres = atoi(strtok(NULL, "|")); 
+    totalcaracteres = atoi(strtok(NULL, "|"));
     printf("totalcaracteres %d\n", totalcaracteres);
 
     printf("[-] Cargando archivo\n");
@@ -526,7 +526,7 @@ int main(int argc, char *argv[]){
     int disponibilidad = 20;
 
     archivo = argv[2];
-
+    system("rm -f valoresHuffman");
     iniciarTablaClientes();
     iniciarSocketTCP(ip,puerto,disponibilidad);
 
