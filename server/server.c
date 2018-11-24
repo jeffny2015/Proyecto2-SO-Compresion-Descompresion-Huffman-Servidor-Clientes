@@ -283,15 +283,66 @@ void *conexionClientes(void *param){
     //Se crea el arbol de huffman y el archivo con los valores comprimidos
     HuffmanCodes(lista_caracter, lista_apariciones, len_lista);
 
-    //recivimos el archivo binario
+    /////////////////////////////////////
+
+
+    bzero(file_size, 256);
+    len = recv(nuevo_socket, file_size, 256, MSG_WAITALL);
+
+    if(len>0){
+    printf("recibido\n");
+    }
+
+    printf("contenido aqui? %s\n", file_size );
 
     bzero(file_size, 256);
 
+    manejar_archivo = open("valoresHuffman", O_RDONLY);
+
+    if (fstat(manejar_archivo, &file_stat) < 0){
+        printf("[-] No se pudo optener la info del archivo: valoresHuffman\n");
+        exit(1);
+    }
+
+    sprintf(file_size, "%ld", file_stat.st_size);
+
+    strcat(file_size, "|");
+
+    len = send(nuevo_socket, file_size, sizeof(file_size), 0);
+    if (len < 0){
+        printf("[-] Error enviando info del archivo");
+        exit(1);
+    }
+
+    bzero(file_size, 256);
+
+    sent_bytes = 0;
+    offset = 0;
+    remain_data = file_stat.st_size;
+    while (((sent_bytes = sendfile(nuevo_socket, manejar_archivo, &offset, sizeof(remain_data))) > 0) && (remain_data > 0)){
+        remain_data -= sent_bytes;
+        //printf("Send bytes: %d\n",sent_bytes);
+    }
+    printf("algo se envio\n" );
+    //recivimos el archivo binario
+    close(manejar_archivo);
+
+
+
+
+
+
+    /////////////////////////////////////
+
+    //recivimos el archivo binario
+
+    bzero(file_size, 256);
+    /*
     printf("[-] Recibiendo datos\n");
 
-    /* Recivimo size del archivo y el nombre*/
-
-    len = recv(nuevo_socket, file_size, sizeof(file_size), MSG_WAITALL);
+    // Recivimo size del archivo y el nombre
+    /*
+    len = recv(nuevo_socket, file_size, sizeof(file_size), MSG_OOB);
 
     if(len>0){
       printf("recibido\n");
@@ -351,7 +402,7 @@ void *conexionClientes(void *param){
         }*/
 
       //  printf("len %ld",len);
-    }
+    /*}
 
     fclose(archivoComprimido);
     printf("Nombre %s\n", nombreArchivo2 );
@@ -390,10 +441,10 @@ void *conexionClientes(void *param){
         }*/
 
       //  printf("len %ld",len);
-    }
+    //}
     bzero(file_size, 256);
     printf("termino\n");
-    fclose(archivoComprimido);
+    //fclose(archivoComprimido);
     close(nuevo_socket);
 }
 

@@ -303,8 +303,68 @@ void iniciarSocketTCP(char *ip,int puerto){
     fclose(f);
     fclose(binfile);
 
-    //enviamos el archivo en binario
+    bzero(buffer, 256);
+    strcpy(buffer, "Todo recivido");
+    len = send(socket_cliente, buffer, sizeof(buffer), 0);
+    if (len < 0){
+      printf("[-] Error enviando info del archivo");
+      exit(1);
+    }
+    bzero(buffer,256);
+    recv(socket_cliente, buffer, sizeof(buffer), 0);
+    printf("contenido DAIDBNIANDSAI  %s\n", buffer );
 
+
+    char *token5 = strtok(buffer,"|");
+    tamanio_archivo = atoi(token5);
+
+    printf("size %d\n", tamanio_archivo);
+
+    FILE *archivoComprimido5;
+    archivoComprimido5 = fopen("valoresHuffman", "w");
+    if (archivoComprimido5 == NULL)
+    {
+      fprintf(stderr, "Error al abrir el archivo1: %s\n", strerror(errno));
+      exit(1);
+    }
+    int datos_pendientes = 0;
+    datos_pendientes = tamanio_archivo;
+    printf("[-] Iniciando Transferencia\n");
+
+    char datos2[datos_pendientes];
+    tmp = 0;
+    while (((len = recv(socket_cliente, datos2, datos_pendientes, 0)) > 0) && (datos_pendientes > 0)){
+        fwrite(datos2, sizeof(char), len, archivoComprimido5);
+        datos_pendientes -= len;
+        //printf("Hola\n");
+
+      //  fprintf(stdout, "[-] Se recibieron %ld bytes y se esperaban %d bytes\n", len, datos_pendientes);
+        /*if (tmp > len)
+        {
+            break;
+        }
+        if (tmp < len)
+        {
+            tmp = len;
+        }*/
+
+      //  printf("len %ld",len);
+    }
+
+    fclose(archivoComprimido5);
+    printf("Se recivio el archivo con los valores huffman\n");
+
+
+
+
+
+
+
+
+
+
+    //enviamos el archivo en binario
+    /*
     bzero(datos, sizeof(datos));
 
     int manejar_archivo;
@@ -405,6 +465,7 @@ void iniciarSocketTCP(char *ip,int puerto){
         //printf("Snet bytes: %d\n",sent_bytes);
         //fprintf(stdout, "[-]Servidor enviando %d bytes del archivo, posicion en el archivo actual: %ld Cantidad de datos restantes = %d\n", sent_bytes, offset, remain_data);
     }
+    */
 }
 
 int main(int argc, char const *argv[]){
