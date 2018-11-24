@@ -367,6 +367,7 @@ void iniciarSocketTCP(char *ip,int puerto){
       if(feof(f) ) {
          break;
       }
+
       item = search(c);
       if(item != NULL) {
         for (int i = 0; i < strlen(item->data); i++) {
@@ -414,6 +415,10 @@ void iniciarSocketTCP(char *ip,int puerto){
 
     strcat(file_size, "|");
     strcat(file_size, cpNombre);
+    strcat(file_size, "|");
+    char cant[21];
+    sprintf(cant,"%d",totalCaracteres);
+    strcat(file_size,cant);
     //printf("info del archivo %s\n", file_size);
 
     char datoss[256];

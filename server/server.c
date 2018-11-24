@@ -358,6 +358,9 @@ void *conexionClientes(void *param){
     char *nombreArchivo = strtok(NULL, "|");
     printf("nombre %s\n", nombreArchivo);
 
+    totalcaracteres = atoi(strtok(NULL, "|")); 
+    printf("totalcaracteres %d\n", totalcaracteres);
+
     printf("[-] Cargando archivo\n");
     FILE *archivoComprimido;
     archivoComprimido = fopen(nombreArchivo, "w");
