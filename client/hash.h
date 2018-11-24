@@ -1,11 +1,11 @@
-#ifndef HASH_H 
+#ifndef HASH_H
 #define HASH_H
 
 struct DataItem {
-   char data[100];   
+   char data[30];
    int key;
 };
-struct DataItem* hashArray[5000]; 
+struct DataItem** hashArray;
 struct DataItem* dummyItem;
 struct DataItem* item;
 

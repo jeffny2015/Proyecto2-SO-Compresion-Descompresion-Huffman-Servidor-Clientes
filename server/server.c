@@ -346,7 +346,7 @@ void *conexionClientes(void *param){
     //recivimos el archivo binario
 
     bzero(file_size, 256);
-    /*
+    
     printf("[-] Recibiendo datos\n");
 
     // Recivimo size del archivo y el nombre
@@ -415,7 +415,7 @@ void *conexionClientes(void *param){
     printf("Nombre %s\n", nombreArchivo2 );
     //bzero(file_size, 256);
 
-    printf("[-] Recibiendo datos\n");
+    /*printf("[-] Recibiendo datos\n");
 
     printf("[-] Cargando archivo\n");
     printf("nombre del archivo que quiero abrir %s\n", nombreArchivo2);

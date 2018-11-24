@@ -6,42 +6,49 @@
 
 int size;
 
-
 void setSize(int s){
    size = s;
 }
 int hashCode(int key) {
-   int tmp = key % size;
-   return tmp;
+   return key % size;
+   
 }
 
 struct DataItem *search(int key) {
-   //get the hash 
-   int hashIndex = hashCode(key);  
-	
-   //move in array until an empty 
+   //get the hash
+   int hashIndex = hashCode(key);
+
+   //move in array until an empty
    while(hashArray[hashIndex] != NULL) {
-	
-      if(hashArray[hashIndex]->key == key)
-         return hashArray[hashIndex]; 
-			
+     //printf("eqwewqe %d\n", (size-1) );
+      if(hashArray[hashIndex]->key == key){
+         return hashArray[hashIndex];
+      }
+
       //go to next cell
       ++hashIndex;
-		
+
       //wrap around the table
       hashIndex %= size;
-   }        
-   return NULL;      
+      //printf("hash i %d\n", hashIndex );
+
+      if(hashIndex == (size)){
+        break;
+      }
+      //printf("hola\n" );
+   }
+   //printf("DSADSADSA\n");
+   return NULL;
 }
 
 void insert(int key,char data[]) {
    struct DataItem *item = (struct DataItem*) malloc(sizeof(struct DataItem));
-   strcpy(item->data,data);  
+   strcpy(item->data,data);
    item->key = key;
-   //get the hash 
+   //get the hash
    int hashIndex = hashCode(key);
    //move in array until an empty or deleted cell
-   while(hashArray[hashIndex] != NULL && hashArray[hashIndex]->key != -1) {
+   while(hashArray[hashIndex] != NULL &&  hashArray[hashIndex]->key != -1) {
       //go to next cell
       ++hashIndex;
       //wrap around the table
@@ -53,14 +60,14 @@ void insert(int key,char data[]) {
 
 void display() {
    int i = 0;
-	
+
    for(i = 0; i<size; i++) {
-	
+
       if(hashArray[i] != NULL)
          printf(" (%d,%s)\n",hashArray[i]->key,hashArray[i]->data);
       else
-         printf(" ~~ \n");
+        break;
    }
-	
+
    printf("\n");
 }

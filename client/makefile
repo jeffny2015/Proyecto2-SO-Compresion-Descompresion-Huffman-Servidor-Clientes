@@ -8,7 +8,7 @@ SALIDA = ejecutable
 #regla que se ejecuta por defecto
 
 all:
-	gcc $(BANDERAS) -pthread client.c huffman.c hash.c binario.c -lm -o $(SALIDA)
+	gcc $(BANDERAS) -pthread client.c hash.c binario.c -lm -o $(SALIDA)
 
 #regla especial para limpiar
 

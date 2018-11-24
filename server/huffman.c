@@ -302,7 +302,8 @@ void HuffmanCodes(char data[], int freq[], int size)
 	f = fopen(archivo,"r");
 	if(f == NULL){
 		f = fopen(archivo,"w");
-	   	//fprintf(f,"%d %d\n",totalCaracteres,len);
+	   	fprintf(f,"%d %d\n",totalCaracteres,len);
+	   	printf("HOla mierda\n");
 
 		printCodes(root, arr, top);
 

@@ -14,7 +14,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/sendfile.h>
-#include "huffman.h"
+//#include "huffman.h"
 #include "binario.h"
 #include "hash.h"
 #include "client.h"
@@ -255,52 +255,11 @@ void iniciarSocketTCP(char *ip,int puerto){
     }
     close(manejar_archivo1);
     /************************************/
-    HuffmanCodes(lista_caracter, lista_apariciones, len_lista);
+    //HuffmanCodes(lista_caracter, lista_apariciones, len_lista);
 
-    f = fopen(copiaNombre,"r");
-    char cpNombre[15];
-    char nombreHuffman[20];
-    //se define el nombre del archivo huffman
-    strcpy(nombreHuffman, "h");
-    strcat(nombreHuffman, copiaNombre);
-    printf("nombre del archivo huffman %s\n", nombreHuffman);
-    //se define el nombre del archivo binario
-    strcpy(cpNombre,copiaNombre);
-    strcat(cpNombre,".bin");
-    binfile = fopen(cpNombre, "w");
-    while(1) {
-      c = fgetc(f);
 
-      if(feof(f) ) {
-         break;
-      }
-      item = search(c);
-      if(item != NULL) {
-        for (int i = 0; i < strlen(item->data); i++) {
-            if (item->data[i] == '1')
-            {
-                WriteBit(1);
-            }else{
-                WriteBit(0);
-            }
-            contador++;
+    /*******/
 
-            if (contador == 8){
-                contador = 0;
-            }
-        }
-      }
-    }
-
-    int restantes = 8 - contador;
-    if (restantes > 0){
-        for (int i = 0; i < restantes; i++)
-        {
-            WriteBit(0);
-        }
-    }
-    fclose(f);
-    fclose(binfile);
 
     bzero(buffer, 256);
     strcpy(buffer, "Todo recivido");
@@ -371,14 +330,109 @@ void iniciarSocketTCP(char *ip,int puerto){
     
     bzero(datos, sizeof(datos));
 
+    /******/
+    /****/
+    printf("Pordonde vamos\n");
+    dummyItem = (struct DataItem*) malloc(sizeof(struct DataItem));
+    strcpy(dummyItem->data,"-1");
+    dummyItem->key = -1;
+    //dummyItem->key = -1;
+    printf("Se va a abrir el archivo\n");
+    //FILE *f;
+    f = fopen("valoresHuffman","r");
+    int i = 0;
+    int hash_len;
+    char buffer6[256];
+    char tmp6[256];
+    char *token6;
+    int cantidad_caracteres;
+    fgets(buffer6, sizeof(buffer6), f);
+    token6 = strtok(buffer6," ");
+    cantidad_caracteres = atoi(token6);
+    printf("Se abrrio\n");
+    token6 = strtok(NULL," ");
+    strcpy(tmp6,token6);
+    token6 = strtok(tmp6,"\n");
+    hash_len = atoi(token6);
+    hash_len += 1;
+    bzero(tmp6,256);
+    int key;
+
+    hashArray =  malloc(hash_len * sizeof(struct DataItem));
+    setSize(hash_len);
+
+    while(fgets(buffer6, sizeof(buffer6), f) != NULL){
+      printf("Dentro del while\n");
+      token6 = strtok(buffer6," ");
+      key = atoi(token6);
+      //key = atoi(token);
+      token6 = strtok(NULL," ");
+      strcpy(tmp6,token6);
+      token6 = strtok(tmp6,"\n");
+      printf("%d %s\n",key,token6);
+      insert(key, token6);
+      bzero(tmp6,256);
+    }
+
+    bzero(tmp6,256);
+    printf("Pordonde vamos aqui\n");
+    /**-*/
+    printf("NONONONOONONONONONOONONONONONONO\n");
+    f = fopen(copiaNombre,"r");
+    char cpNombre[15];
+    char nombreHuffman[20];
+    //se define el nombre del archivo huffman
+    strcpy(nombreHuffman, "h");
+    strcat(nombreHuffman, copiaNombre);
+    printf("nombre del archivo huffman %s\n", nombreHuffman);
+    //se define el nombre del archivo binario
+    strcpy(cpNombre,copiaNombre);
+    strcat(cpNombre,".bin");
+    binfile = fopen(cpNombre, "w");
+    while(1) {
+      c = fgetc(f);
+
+      if(feof(f) ) {
+         break;
+      }
+      item = search(c);
+      if(item != NULL) {
+        for (int i = 0; i < strlen(item->data); i++) {
+            if (item->data[i] == '1')
+            {
+                WriteBit(1);
+            }else{
+                WriteBit(0);
+            }
+            contador++;
+
+            if (contador == 8){
+                contador = 0;
+            }
+        }
+      }
+    }
+
+    int restantes = 8 - contador;
+    if (restantes > 0){
+        for (int i = 0; i < restantes; i++)
+        {
+            WriteBit(0);
+        }
+    }
+    fclose(f);
+    fclose(binfile);
+    printf("QUQUQUQUQUQUQUQUQU\n");
+
+
+
+
+
+
+
+
 
     
-
-
-
-
-    
-    /*
     int manejar_archivo;
     manejar_archivo = open(cpNombre, O_RDONLY);
 
@@ -468,7 +522,7 @@ void iniciarSocketTCP(char *ip,int puerto){
     bzero(datos, sizeof(datos));
 
 
-    sent_bytes = 0;
+    /*sent_bytes = 0;
     offset = 0;
     remain_data = file_stat2.st_size;
       printf("tamanio 2 %d\n", remain_data );
