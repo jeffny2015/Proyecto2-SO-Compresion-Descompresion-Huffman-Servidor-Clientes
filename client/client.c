@@ -170,7 +170,7 @@ void iniciarSocketTCP(char *ip,int puerto){
     printf("[-] Paso 3: leemos Frecuencias\n");
     len_lista = inicializarLista();
     Arch =fopen(copiaNombre,"r");
-    
+
     while(1) {
       c = fgetc(Arch);
       totalCaracteres++;
@@ -231,7 +231,7 @@ void iniciarSocketTCP(char *ip,int puerto){
     close(manejar_archivo);
 
     printf("[-] Paso 9: Recibimos datos con los valores totales\n");
-    
+
     bzero(buffer,256);
     recv(socket_cliente, buffer, sizeof(buffer), 0);
     printf("Buffer de huffman%s\n",buffer);
@@ -240,12 +240,12 @@ void iniciarSocketTCP(char *ip,int puerto){
     tamanio_archivo = atoi(token);
 
     printf("[-] Paso 10: Recibimos archivo y lo escribimos\n");
-    Arch = fopen("valoresHuffman", "w");
+    Arch = fopen("valoresHuffman.txt", "w");
     if (Arch == NULL){
       fprintf(stderr, "Error al abrir el archivo1: %s\n", strerror(errno));
       exit(1);
     }
-    
+
     remain_data = tamanio_archivo;
     printf("Tamanio archivo %d\n",remain_data);
     char datos1[BUFSIZ];//remain_data];
@@ -274,13 +274,13 @@ void iniciarSocketTCP(char *ip,int puerto){
     dummyItem = (struct DataItem*) malloc(sizeof(struct DataItem));
     strcpy(dummyItem->data,"-1");
     dummyItem->key = -1;
-    Arch = fopen("valoresHuffman","r");
+    Arch = fopen("valoresHuffman.txt","r");
 
     int i = 0;
     int hash_len;
     char tmp6[256];
     int cantidad_caracteres;
-    
+
     fgets(buffer, 256,Arch);
     token = strtok(buffer," ");
     cantidad_caracteres = atoi(token);
@@ -295,6 +295,7 @@ void iniciarSocketTCP(char *ip,int puerto){
     printf("Hash len: %d\n",hash_len);
     hashArray =  malloc(hash_len * sizeof(struct DataItem));
     setSize(hash_len);
+
     while(fgets(buffer, 256, Arch) != NULL){
       token = strtok(buffer," ");
       key = atoi(token);
@@ -306,7 +307,8 @@ void iniciarSocketTCP(char *ip,int puerto){
       insert(key, token);
       bzero(tmp6,256);
     }
-    display();
+
+    //display();
     bzero(buffer,256);
     bzero(tmp6,256);
     fclose(Arch);
@@ -317,7 +319,7 @@ void iniciarSocketTCP(char *ip,int puerto){
     strcpy(nombreHuffman, "h");
     strcat(nombreHuffman, copiaNombre);
     strcpy(cpNombre,copiaNombre);
-    strcat(cpNombre,".bin");
+    strcat(cpNombre,".txt");
     binfile = fopen(cpNombre, "w");
     while(1) {
       c = fgetc(Arch);
@@ -375,13 +377,13 @@ void iniciarSocketTCP(char *ip,int puerto){
     sent_bytes = 0;
     offset = 0;
     remain_data = file_stat.st_size;
-    
+
     bzero(file_size, 256);
 
     recv(socket_cliente,msg,sizeof(msg),0);
     printf("%s\n",msg);
     bzero(msg,10);
-    
+
     while (remain_data > 0){
         sent_bytes = sendfile(socket_cliente, manejar_archivo, &offset, BUFSIZ);//remain_data);
         if (sent_bytes <= 0){break;}

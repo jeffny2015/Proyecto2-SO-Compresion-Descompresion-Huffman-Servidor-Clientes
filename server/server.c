@@ -29,6 +29,8 @@ int totalcaracteres;
 int enviar;
 int tamanio_archivo2;
 int archivos_por_recibir;
+int archivos_comprimidos;
+long int bytesArchivo;
 
 struct InfoAdd{
     char *ip;
@@ -121,7 +123,7 @@ void *conexionClientes(void *param){
     int tamanio_archivo;
     int manejar_archivo;
     int copianumerocliente;
-    //Variables 
+    //Variables
 
     int c;
     int esta;
@@ -139,7 +141,7 @@ void *conexionClientes(void *param){
 
     //Aqui creamos los archivos con las partes separadas del mensaje para cada cliente
     char nombre_archivo[7];
-    char num[5];
+    char num[10];
 
     if(contador_archivo_enviado < 10){
       strcpy(nombre_archivo, "x0");
@@ -198,8 +200,8 @@ void *conexionClientes(void *param){
     sent_bytes = 0;
     offset = 0;
     remain_data = file_stat.st_size;
-    
-    
+
+
     while (remain_data > 0){
         sent_bytes = sendfile(nuevo_socket, manejar_archivo, &offset, BUFSIZ);//remain_data);
         if (sent_bytes <= 0){break;}
@@ -266,17 +268,17 @@ void *conexionClientes(void *param){
     bzero(buf,1024);
     fclose(Arch);
     printf("[-]Paso 3: Frecuencias listas\n");
-  
-    pthread_mutex_lock(&lock); 
+
+    pthread_mutex_lock(&lock);
     archivos_por_recibir -= 1;
-    pthread_mutex_unlock(&lock); 
-    
+    pthread_mutex_unlock(&lock);
+
     printf("[-]Paso 4: Esperando a los demas clientes para recibir las demas frecuencias\n");
     while(archivos_por_recibir > 0){};
 
     printf("[-]Paso 5: Sumar frecuencias totales \n");
     if (!copianumerocliente){
-        HuffmanCodes(lista_caracter, lista_apariciones, len_lista);
+        HuffmanCodes(lista_caracter, lista_apariciones, len_lista, bytesArchivo, len_tabla_clientes);
         archivos_por_recibir = -1;
     }
     while(archivos_por_recibir > -1){
@@ -286,7 +288,7 @@ void *conexionClientes(void *param){
     printf("[-]Paso 6: Eenviarselas al cliente \n");
 
     manejar_archivo = 0;
-    manejar_archivo = open("valoresHuffman", O_RDONLY);
+    manejar_archivo = open("valoresHuffman.txt", O_RDONLY);
 
     if (fstat(manejar_archivo, &file_stat) < 0){
         printf("[-] No se pudo optener la info del archivo: valoresHuffman\n");
@@ -322,7 +324,7 @@ void *conexionClientes(void *param){
     printf("[-]Paso 8: Recivimos el archivo comprimido \n");
     //Recibimos los datos para escribir
     len = recv(nuevo_socket, file_size, sizeof(file_size), 0);//MSG_OOB);
-    printf("Jeffrey hizo algo %s\n",file_size);
+    //printf("Jeffrey hizo algo %s\n",file_size);
     tamanio_archivo = 0;
     token = strtok(file_size,"|");
     tamanio_archivo = atoi(token);
@@ -360,10 +362,56 @@ void *conexionClientes(void *param){
     remain_data = 0;
     tamanio_archivo = 0;
     fclose(Arch);
-    printf("[-]Paso 10: Escribimos los datos \n");
+    printf("[-]Paso 10: Juntamos los comprimidos \n");
+
+    archivos_comprimidos -= 1;
+    while(archivos_comprimidos > 0){
+
+    }
+    int terminamos = 1;
+
+    //head -c -1 -q x00.txt x01.txt > salida2.txt
+    //cat x00.txt x01.txt > salida.tx
+    if(!copianumerocliente){
+      system("cat valoresHuffman.txt >> comprimido.txt");
+      char str[(20 + len_tabla_clientes*12)];
+      int indice = 0;
+      int cantJuntar = len_tabla_clientes;
+      char numero[10];
+      //strcpy(str, "cat valoresHuffman.txt ");
+      strcpy(str, "head -c -1 -q ");
+      while(cantJuntar > 1){
+        cantJuntar -= 1;
+        if(indice < 10){
+          strcat(str, "x0");
+        }else{
+          strcat(str, "x");
+        }
+        sprintf(numero, "%d", indice);
+        strcat(str, numero);
+        strcat(str, ".txt ");
+        indice += 1;
+      }
+      if(indice < 10){
+        strcat(str, "x0");
+      }else{
+        strcat(str, "x");
+      }
+      sprintf(numero, "%d", indice);
+      strcat(str, numero);
+      strcat(str, ".txt > comprimido2.txt");
+      //printf("str: %s\n", str);
+      system(str);
+      system("cat comprimido2.txt >> comprimido.txt");
+      terminamos = 0;
+      system("rm -f comprimido2.txt");
+
+    }
+    while(terminamos == 1){}
+
+    printf("[-]Paso 11: Compresion finalizada \n");
     close(nuevo_socket);
-
-
+    exit(1);
 }
 
 
@@ -443,7 +491,9 @@ void iniciarSocketTCP(char *ip,int puerto,int disponibilidad){
 
             printf("[-] Tamanio del archivo %ld dividido entre %d clientes\n", file_stat.st_size, len_tabla_clientes);
 
+            archivos_comprimidos = len_tabla_clientes;
             archivos_por_recibir = len_tabla_clientes;
+            bytesArchivo = file_stat.st_size;
             bytesCliente = file_stat.st_size / len_tabla_clientes;
 
             //distribuimos correctamente los archivos
@@ -499,20 +549,17 @@ void iniciarSocketTCP(char *ip,int puerto,int disponibilidad){
 int main(int argc, char *argv[]){
 
     //Configuracion  para el socket
-
-
     char *ip = argv[1];
     int puerto = 4444;
     int disponibilidad = 20;
 
     archivo = argv[2];
-    system("rm -f valoresHuffman");
+    system("rm -f comprimido.txt valoresHuffman.txt");
 
-
-    if (pthread_mutex_init(&lock, NULL) != 0){ 
-        printf("\n mutex init has failed\n"); 
-        return 1; 
-    } 
+    if (pthread_mutex_init(&lock, NULL) != 0){
+        printf("\n mutex init has failed\n");
+        return 1;
+    }
     iniciarTablaClientes();
     iniciarSocketTCP(ip,puerto,disponibilidad);
 

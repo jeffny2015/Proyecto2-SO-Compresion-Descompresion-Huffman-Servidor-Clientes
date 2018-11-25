@@ -280,9 +280,7 @@ void printCodes(struct MinHeapNode* root, int arr[], int top)
 // The main function that builds a
 // Huffman Tree and print codes by traversing
 // the built Huffman Tree
-void HuffmanCodes(char data[], int freq[], int size)
-
-{
+/*void HuffmanCodes(char data[], int freq[], int size){
 	int len = len_lista;
 	setSize(len);
 	//hashArray = (struct DataItem**) malloc(len*sizeof(struct DataItem));
@@ -305,7 +303,27 @@ void HuffmanCodes(char data[], int freq[], int size)
 
 	fclose(f);
 	//display();
-	
+}*/
+void HuffmanCodes(char data[], int freq[], int size, long int total, int clientes){
+	int len = len_lista;
+	setSize(len);
+	//hashArray = (struct DataItem**) malloc(len*sizeof(struct DataItem));
 
+	dummyItem = (struct DataItem*) malloc(sizeof(struct DataItem));
+	strcpy(dummyItem->data,"-1");
+	dummyItem->key = -1;
 
+	// Construct Huffman Tree
+	struct MinHeapNode* root = buildHuffmanTree(data, freq, size);
+
+	// Print Huffman codes using
+	// the Huffman tree built above
+	int arr[MAX_TREE_HT], top = 0;
+	char archivo[20] = "valoresHuffman.txt";
+
+	f = fopen(archivo,"w");
+   	fprintf(f,"%ld %d %d\n",total, len, clientes);
+	printCodes(root, arr, top);
+
+	fclose(f);
 }
