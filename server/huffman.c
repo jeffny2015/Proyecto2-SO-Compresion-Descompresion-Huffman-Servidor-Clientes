@@ -304,7 +304,7 @@ void HuffmanCodes(char data[], int freq[], int size)
 	printCodes(root, arr, top);
 
 	fclose(f);
-	display();
+	//display();
 	
 
 

@@ -2,7 +2,7 @@
 #define HASH_H
 
 struct DataItem {
-   char data[30];
+   char data[100];
    int key;
 };
 struct DataItem** hashArray;

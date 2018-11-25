@@ -14,6 +14,7 @@
 #include "frecuencia.h"
 #include "huffman.h"
 
+pthread_mutex_t lock;
 pthread_t interrupt,detener_servidor;
 socklen_t len_dir;
 int detener;
@@ -23,16 +24,9 @@ char *ipHilo;
 int puertoHilo;
 int len_tabla_clientes = 0;
 char *archivo;
-int manejar_archivo;
 int contador_archivo_enviado = 0;
 int totalcaracteres;
 int enviar;
-int sent_bytes;
-long int offset;
-int remain_data;
-struct stat file_stat;
-ssize_t len;
-int tamanio_archivo;
 int tamanio_archivo2;
 int archivos_por_recibir;
 
@@ -46,6 +40,14 @@ struct InfoAdd{
 void iniciarTablaClientes(){
     TablaClientes = (struct InfoAdd *) malloc(sizeof(struct InfoAdd));
     len_tabla_clientes = 0;
+}
+
+int minimo(int a , int b){
+    if (a < b){
+        return a;
+    }else{
+        return b;
+    }
 }
 
 void agregarCliente(char *ip,int puerto, int socket){
@@ -110,6 +112,14 @@ void *conexionClientes(void *param){
     //temporal
     int aux;
 
+    int sent_bytes;
+    int remain_data;
+
+    long int offset;
+    struct stat file_stat;
+    ssize_t len;
+    int tamanio_archivo;
+    int manejar_archivo;
     int copianumerocliente;
     //Variables 
 
@@ -188,9 +198,10 @@ void *conexionClientes(void *param){
     sent_bytes = 0;
     offset = 0;
     remain_data = file_stat.st_size;
-
+    
+    
     while (remain_data > 0){
-        sent_bytes = sendfile(nuevo_socket, manejar_archivo, &offset, remain_data);
+        sent_bytes = sendfile(nuevo_socket, manejar_archivo, &offset, BUFSIZ);//remain_data);
         if (sent_bytes <= 0){break;}
         remain_data -= sent_bytes;
     }
@@ -215,25 +226,25 @@ void *conexionClientes(void *param){
         exit(1);
     }
     remain_data = tamanio_archivo;
+
     printf("[-] Iniciando Transferencia\n");
 
     strcpy(msg,"ok");
     send(nuevo_socket,msg,sizeof(msg),0);
     bzero(msg,10);
 
-    char datos[remain_data];
+    char datos[BUFSIZ];//remain_data];
     aux = remain_data;
     while (remain_data > 0){
-        len = recv(nuevo_socket, datos, remain_data, 0);
+        len = recv(nuevo_socket, datos,BUFSIZ,0);//remain_data, 0);
         if (len <= 0){break;}
         fwrite(datos, sizeof(char), len, Arch);//Size of  ?
         remain_data -= len;
     }
-
     remain_data = 0;
     len = 0;
     bzero(file_size,256);
-    bzero(datos,aux);
+    bzero(datos,BUFSIZ);//aux);
     aux = 0;
     fclose(Arch);
     printf("[-]Paso 2: Escribimos el archivo de frecuencias que envio el cliente\n");
@@ -255,8 +266,10 @@ void *conexionClientes(void *param){
     bzero(buf,1024);
     fclose(Arch);
     printf("[-]Paso 3: Frecuencias listas\n");
-
+  
+    pthread_mutex_lock(&lock); 
     archivos_por_recibir -= 1;
+    pthread_mutex_unlock(&lock); 
     
     printf("[-]Paso 4: Esperando a los demas clientes para recibir las demas frecuencias\n");
     while(archivos_por_recibir > 0){};
@@ -297,7 +310,7 @@ void *conexionClientes(void *param){
     bzero(msg,10);
 
     while (remain_data > 0){
-        sent_bytes = sendfile(nuevo_socket, manejar_archivo, &offset, remain_data);
+        sent_bytes = sendfile(nuevo_socket, manejar_archivo, &offset, BUFSIZ);//remain_data);
         printf("%d\n",sent_bytes);
         if (sent_bytes <= 0){break;}
         remain_data -= sent_bytes;
@@ -308,7 +321,8 @@ void *conexionClientes(void *param){
     bzero(nomArchaux,sizeof(nomArchaux));
     printf("[-]Paso 8: Recivimos el archivo comprimido \n");
     //Recibimos los datos para escribir
-   /* len = recv(nuevo_socket, file_size, sizeof(file_size), 0);//MSG_OOB);
+    len = recv(nuevo_socket, file_size, sizeof(file_size), 0);//MSG_OOB);
+    printf("Jeffrey hizo algo %s\n",file_size);
     tamanio_archivo = 0;
     token = strtok(file_size,"|");
     tamanio_archivo = atoi(token);
@@ -325,7 +339,7 @@ void *conexionClientes(void *param){
         exit(1);
     }
     remain_data = tamanio_archivo;
-    char datos1[remain_data];
+    char datos1[BUFSIZ];//remain_data];
     aux = 0;
     aux = remain_data;
 
@@ -335,18 +349,18 @@ void *conexionClientes(void *param){
     bzero(msg,10);
 
     while (remain_data > 0){
-        len = recv(nuevo_socket, datos1,remain_data, 0);
+        len = recv(nuevo_socket, datos1,BUFSIZ,0);//remain_data, 0);
         if (len <= 0){break;}
         fwrite(datos1, sizeof(char), len, Arch);
         remain_data -= len;
     }
     bzero(file_size,256);
-    bzero(datos1,aux);
+    bzero(datos1,BUFSIZ);//aux);
     len = 0;
     remain_data = 0;
     tamanio_archivo = 0;
     fclose(Arch);
-    printf("[-]Paso 10: Escribimos los datos \n");*/
+    printf("[-]Paso 10: Escribimos los datos \n");
     close(nuevo_socket);
 
 
@@ -363,7 +377,8 @@ void iniciarSocketTCP(char *ip,int puerto,int disponibilidad){
     long int bytesCliente;
     enviar = 0;
     struct sockaddr_in direccion_servidor, direccion_cliente, direccion_cliente_broadcast;
-
+    struct stat file_stat;
+    int manejar_archivo;
     printf("[-] Iniciando Socket\n");
 
     socket_server = socket(AF_INET, SOCK_STREAM, 0);
@@ -484,12 +499,20 @@ void iniciarSocketTCP(char *ip,int puerto,int disponibilidad){
 int main(int argc, char *argv[]){
 
     //Configuracion  para el socket
+
+
     char *ip = argv[1];
     int puerto = 4444;
     int disponibilidad = 20;
 
     archivo = argv[2];
     system("rm -f valoresHuffman");
+
+
+    if (pthread_mutex_init(&lock, NULL) != 0){ 
+        printf("\n mutex init has failed\n"); 
+        return 1; 
+    } 
     iniciarTablaClientes();
     iniciarSocketTCP(ip,puerto,disponibilidad);
 
