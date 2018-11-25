@@ -261,7 +261,7 @@ void iniciarSocketTCP(char *ip,int puerto){
         len = recv(socket_cliente, datos1, remain_data, 0);
         printf("datos1: %s\n",datos1);
         if (len <= 0){break;}
-        fwrite(datos1, sizeof(char), len, Arch);
+        fwrite(datos1, aux, len, Arch);
         remain_data -= len;
     }
     bzero(datos1,aux);

@@ -42,6 +42,7 @@ struct InfoAdd{
     int socket;
 } *TablaClientes;
 
+
 void iniciarTablaClientes(){
     TablaClientes = (struct InfoAdd *) malloc(sizeof(struct InfoAdd));
     len_tabla_clientes = 0;
@@ -175,6 +176,10 @@ void *conexionClientes(void *param){
     bzero(file_size, 256);
 
 
+    char msg[10];
+    recv(nuevo_socket,msg,sizeof(msg),0);
+    printf("%s\n",msg);
+    bzero(msg,10);
     /*char buftmp[20];
     recv(nuevo_socket,buftmp,strlen(buftmp),0);
     printf("%s\n",buftmp);
@@ -195,6 +200,7 @@ void *conexionClientes(void *param){
 
     //Recibimos las frecuencias
 
+
     //Recibimos los datos para leer el archivo con las frecuencaias
     len = recv(nuevo_socket, file_size, sizeof(file_size),0);//MSG_WAITALL);
 
@@ -211,7 +217,9 @@ void *conexionClientes(void *param){
     remain_data = tamanio_archivo;
     printf("[-] Iniciando Transferencia\n");
 
-
+    strcpy(msg,"ok");
+    send(nuevo_socket,msg,sizeof(msg),0);
+    bzero(msg,10);
 
     char datos[remain_data];
     aux = remain_data;
@@ -258,7 +266,8 @@ void *conexionClientes(void *param){
         HuffmanCodes(lista_caracter, lista_apariciones, len_lista);
         archivos_por_recibir = -1;
     }
-    while(archivos_por_recibir > -1){}
+    while(archivos_por_recibir > -1){
+    }
 
 
     printf("[-]Paso 6: Eenviarselas al cliente \n");
@@ -283,8 +292,13 @@ void *conexionClientes(void *param){
     len = 0;
     remain_data = file_stat.st_size;
 
+    recv(nuevo_socket,msg,sizeof(msg),0);
+    printf("%s\n",msg);
+    bzero(msg,10);
+
     while (remain_data > 0){
         sent_bytes = sendfile(nuevo_socket, manejar_archivo, &offset, remain_data);
+        printf("%d\n",sent_bytes);
         if (sent_bytes <= 0){break;}
         remain_data -= sent_bytes;
     }
@@ -294,7 +308,7 @@ void *conexionClientes(void *param){
     bzero(nomArchaux,sizeof(nomArchaux));
     printf("[-]Paso 8: Recivimos el archivo comprimido \n");
     //Recibimos los datos para escribir
-    len = recv(nuevo_socket, file_size, sizeof(file_size), 0);//MSG_OOB);
+   /* len = recv(nuevo_socket, file_size, sizeof(file_size), 0);//MSG_OOB);
     tamanio_archivo = 0;
     token = strtok(file_size,"|");
     tamanio_archivo = atoi(token);
@@ -314,6 +328,12 @@ void *conexionClientes(void *param){
     char datos1[remain_data];
     aux = 0;
     aux = remain_data;
+
+
+    strcpy(msg,"ok");
+    send(nuevo_socket,msg,sizeof(msg),0);
+    bzero(msg,10);
+
     while (remain_data > 0){
         len = recv(nuevo_socket, datos1,remain_data, 0);
         if (len <= 0){break;}
@@ -326,7 +346,7 @@ void *conexionClientes(void *param){
     remain_data = 0;
     tamanio_archivo = 0;
     fclose(Arch);
-    printf("[-]Paso 10: Escribimos los datos \n");
+    printf("[-]Paso 10: Escribimos los datos \n");*/
     close(nuevo_socket);
 
 

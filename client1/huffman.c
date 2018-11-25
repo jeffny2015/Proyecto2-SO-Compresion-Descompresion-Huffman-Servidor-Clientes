@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "hash.h"
-#include "server.h"
+#include "client.h"
 // This constant can be avoided by explicitly
 // calculating height of Huffman Tree
 #define MAX_TREE_HT 100
@@ -172,7 +172,7 @@ void printArr(int arr[], int n,char c)
 		 bin[i] = arr[i] + '0';
 	bin[n] = '\0';
 
-	//printf("key[%c:%d], val[%s]\n", c,c,bin);
+	printf("key[%c:%d], val[%s]\n", c,c,bin);
 	fprintf(f,"%d %s\n",c,bin);
 	insert(c, bin);
 
@@ -297,15 +297,17 @@ void HuffmanCodes(char data[], int freq[], int size)
 	// Print Huffman codes using
 	// the Huffman tree built above
 	int arr[MAX_TREE_HT], top = 0;
-	char archivo[20] = "valoresHuffman";
 
+	char archivo[20] = "h";
+	strcat(archivo,NombreArchivo);
 	f = fopen(archivo,"w");
    	fprintf(f,"%d %d\n",totalCaracteres,len);
+
 	printCodes(root, arr, top);
 
 	fclose(f);
-	display();
-	
+	//display();
+
 
 
 }
