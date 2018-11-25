@@ -1,0 +1,8 @@
+
+make
+
+primer argumento: archivo comprimido
+segundo argumento: nombre del archivo al descomprimirlo
+
+./ejecutable comprimido.txt salida.txt
+

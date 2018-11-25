@@ -10,7 +10,6 @@ SALIDA = ejecutable
 all:
 	gcc $(BANDERAS) descomprimir.c hash.c -o $(SALIDA)
 
-	./$(SALIDA)
 
 #regla especial para limpiar
 

@@ -4,26 +4,23 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <sys/stat.h>
-#include <fcntl.h> // open function
-#include <unistd.h> // close function
+#include <fcntl.h>
+#include <unistd.h>
 #include "hash.h"
 
 struct stat file_stat;
-char *byte = NULL;  /* declare a pointer, and initialize to NULL */
+char *byte = NULL;
 FILE *f;
 int cantidad_caracteres;
-
+int cantidad_clientes;
 
 /* Print byte as bit sequence with MSB first */
-char *print_byte_as_bits(int byte_value)
-{
+char *print_byte_as_bits(int byte_value){
     int i;
     byte = malloc (8 * sizeof *byte);
 
-    if (byte_value >= 0 && byte_value < 256)
-    {
-        for (i = 0; i < 8; i++)
-        {
+    if (byte_value >= 0 && byte_value < 256){
+        for (i = 0; i < 8; i++){
             //printf("%c ", (byte_value & 0x80) ? '1' : '0');
             byte[i] = (byte_value & 0x80) ? '1' : '0';
             byte_value <<= 1;
@@ -35,35 +32,108 @@ char *print_byte_as_bits(int byte_value)
     return byte;
 }
 
-void ReadBinFile(void)
-{
+int main (int argc, char **argv){
 
-    FILE *ptr;
-    unsigned char buffer; // note: 1 byte
-    char *nombre = "x00.bin";
-    int manejar_archivo;
-
-    manejar_archivo = open(nombre, O_RDONLY);
-
-    if (fstat(manejar_archivo, &file_stat) < 0){
-      printf("[-] No se pudo optener la info del archivo: %s\n",nombre);
+    char *nombreComprimido = argv[1];
+    char *nombreDescomprimido = argv[2];
+    printf("%s %s\n", nombreComprimido, nombreDescomprimido );
+    if(argc < 1){
+      printf("ingrese como parametro el nombre del archivo a comprimir y el de descomprimido\n");
       exit(1);
     }
 
-    fprintf(stdout, "[-] Largo del archivo: %ld bytes\n", file_stat.st_size);
+    dummyItem = (struct DataItem*) malloc(sizeof(struct DataItem));
+    strcpy(dummyItem->data,"-1");
+    strcpy(dummyItem->key,"-1");
+    //dummyItem->key = -1;
 
-    int fileSize = file_stat.st_size;
-    close(manejar_archivo);
+    FILE *f;
+    f = fopen(nombreComprimido,"r");
+    if(f == NULL){
+      printf("No existe el archivo\n");
+      exit(1);
+    }
 
-    ptr = fopen(nombre,"rb");
+    int i = 0;
+    int hash_len;
+    char bufferLinea[256];
+    char tmp[256];
+    char *token;
+
+    fgets(bufferLinea, sizeof(bufferLinea), f);
+    token = strtok(bufferLinea," ");
+    cantidad_caracteres = atoi(token);
+
+    token = strtok(NULL," ");
+    strcpy(tmp,token);
+    hash_len = atoi(token);
+    hash_len += 1;
+    bzero(tmp,256);
+
+    token = strtok(NULL," ");
+    strcpy(tmp,token);
+    token = strtok(tmp,"\n");
+    cantidad_clientes = atoi(token);
+    bzero(tmp,256);
+
+    char key[50];
+
+    hashArray =  malloc(hash_len * sizeof(struct DataItem));
+    setSize(hash_len);
+
+    int indice = 0;
+
+    while(indice < (hash_len-1)){
+      fgets(bufferLinea, sizeof(bufferLinea), f);
+      token = strtok(bufferLinea," ");
+      strcpy(key,token);
+      //key = atoi(token);
+      token = strtok(NULL," ");
+      strcpy(tmp,token);
+      token = strtok(tmp,"\n");
+      insert(token, key);
+      bzero(tmp,256);
+      indice++;
+    }
+
+    //display();
+
+    unsigned char buffer;
+    int manejar_archivo;
+    int bytesCliente;
+    int charsPorCliente;
+    char casoEspecial = 0;
+
+    FILE *fp;
+    fp = fopen(nombreDescomprimido, "wb");
+
+    char x[cantidad_caracteres];
+
+    /*if(cantidad_clientes > 1){
+      bytesCliente = cantidad_caracteres / cantidad_clientes;
+      //distribuimos correctamente los archivos
+      //si la cantidad de clientes es impar, la cantidad de bytes tambien y lo mismo si es par, para que no quede 1 byte suelto
+      if(bytesCliente % 2 == 1 && cantidad_clientes % 2 == 0){
+        bytesCliente += 1;
+        casoEspecial = 1;
+      }else if(bytesCliente % 2 == 0 && cantidad_clientes % 2 == 1){
+        bytesCliente += 1;
+        casoEspecial = 1;
+      }
+      charsPorCliente = bytesCliente;
+    }else{*/
+      charsPorCliente = cantidad_caracteres;
+    //}
+
     char *binario;
     int tamanio = 7;
-    int indice = 0;
+    indice = 0;
+    int indiceChar = 0;
     int num;
     binario = (char *) malloc(1);
-    while(cantidad_caracteres > 1){
-      for (int i = 0; i < fileSize; i++) {
-        fread(&buffer, 1, 1, ptr);
+    while(cantidad_caracteres > 0){
+      for (int i = 0; i < charsPorCliente; i++) {
+        fread(&buffer, 1, 1, f);
         char *byte = print_byte_as_bits(buffer);
         //printf("%s\n", byte);
 
@@ -72,7 +142,6 @@ void ReadBinFile(void)
 
         //printf("valor del binario %s\n", binario);
         for (int j = 0; j <= 7; j++) {
-          //sleep(1);
           //printf("SIZE %d\n", tamanio);
           strncat(binario, &byte[indice], 1 );
 
@@ -83,7 +152,9 @@ void ReadBinFile(void)
             //escribimos la letra en el archivo
             num = atoi(item->data);
             //printf("SE ENCONTRO UNO %s",item->data);
-            printf("%c",(char)num);
+            //printf("%c",(char)num);
+            x[indiceChar] = num;
+            indiceChar++;
             tamanio = 7;
             indice += 1;
             free(binario);
@@ -107,53 +178,11 @@ void ReadBinFile(void)
         }
       }
     }
-    fclose (ptr);
-}
 
-int main (void){
+    fwrite(x, sizeof(x[0]), sizeof(x)/sizeof(x[0]), fp);
 
-    dummyItem = (struct DataItem*) malloc(sizeof(struct DataItem));
-    strcpy(dummyItem->data,"-1");
-    strcpy(dummyItem->key,"-1");
-    //dummyItem->key = -1;
-
-    FILE *f;
-    f = fopen("hx00","r");
-    int i = 0;
-    int hash_len;
-    char buffer[256];
-    char tmp[256];
-    char *token;
-
-    fgets(buffer, sizeof(buffer), f);
-    token = strtok(buffer," ");
-    cantidad_caracteres = atoi(token);
-
-    token = strtok(NULL," ");
-    strcpy(tmp,token);
-    token = strtok(tmp,"\n");
-    hash_len = atoi(token);
-    hash_len += 1;
-    bzero(tmp,256);
-    char key[50];
-
-    hashArray =  malloc(hash_len * sizeof(struct DataItem));
-    setSize(hash_len);
-
-    while(fgets(buffer, sizeof(buffer), f) != NULL){
-
-      token = strtok(buffer," ");
-      strcpy(key,token);
-      //key = atoi(token);
-      token = strtok(NULL," ");
-      strcpy(tmp,token);
-      token = strtok(tmp,"\n");
-      insert(token, key);
-      bzero(tmp,256);
-    }
-
-    //display();
-    ReadBinFile();
-
+    fclose(fp);
+    fclose (f);
+    printf("Descompresion finalizada\n");
     return 0;
 }
