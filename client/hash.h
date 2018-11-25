@@ -1,17 +1,15 @@
 #ifndef HASH_H
 #define HASH_H
 
-struct DataItem {
-   char data[100];
-   int key;
+struct InfoItem {
+   char valor[100];
+   int llave;
 };
-struct DataItem** hashArray;
-struct DataItem* dummyItem;
-struct DataItem* item;
+struct InfoItem** tablahash;
+struct InfoItem* item;
 
-struct DataItem *search(int key);
-void insert(int key,char data[]);
-void display();
-void setSize(int s);
+struct InfoItem *buscar(int llave);
+void insertar(int llave,char valor[]);
+void setlen(int l);
 
 #endif

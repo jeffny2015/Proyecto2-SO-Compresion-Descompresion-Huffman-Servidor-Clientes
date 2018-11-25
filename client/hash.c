@@ -4,63 +4,39 @@
 #include <stdbool.h>
 #include "hash.h"
 
-int size;
+int len;
 
-void setSize(int s){
-   size = s;
+void setlen(int l){
+   len = l;
 }
-int hashCode(int key) {
-   int tmp = key % size;
+int indice(int llave) {
+   int tmp = llave % len;
    return tmp;
 }
-
-struct DataItem *search(int key) {
-   //get the hash 
-   int hashIndex = hashCode(key);  
-   
-   //move in array until an empty 
-   while(hashArray[hashIndex] != NULL) {
-   
-      if(hashArray[hashIndex]->key == key)
-         return hashArray[hashIndex]; 
-         
-      //go to next cell
-      ++hashIndex;
-      
-      //wrap around the table
-      hashIndex %= size;
+struct InfoItem *buscar(int llave) {
+   // Buscamos el valor en latablahash
+   int i = indice(llave);   
+   while(tablahash[i] != NULL) {
+      //si las llaves son iguales 
+      if(tablahash[i]->llave == llave){
+         return tablahash[i]; 
+      }
+      i++;
+      i %= len;
    }        
-   
    return NULL;        
 }
 
-void insert(int key,char data[]) {
-   struct DataItem *item = (struct DataItem*) malloc(sizeof(struct DataItem));
-   strcpy(item->data,data);  
-   item->key = key;
-   //get the hash 
-   int hashIndex = hashCode(key);
-   //move in array until an empty or deleted cell
-   while(hashArray[hashIndex] != NULL && hashArray[hashIndex]->key != -1) {
-      //go to next cell
-      ++hashIndex;
-      //wrap around the table
-      hashIndex %= size;
-
+void insertar(int llave,char valor[]) {
+   //inicializamos y agregamos la llave y el valor
+   struct InfoItem *item = (struct InfoItem*) malloc(sizeof(struct InfoItem));
+   item->llave = llave;
+   strcpy(item->valor,valor);  
+   //le asignamos una pos en el hash
+   int i = indice(llave);
+   while(tablahash[i] != NULL && tablahash[i]->llave != -1) {
+      i++;
+      i %= len;
    }
-   hashArray[hashIndex] = item;
-}
-
-void display() {
-   int i = 0;
-   
-   for(i = 0; i<size; i++) {
-   
-      if(hashArray[i] != NULL)
-         printf(" (%d,%s)\n",hashArray[i]->key,hashArray[i]->data);
-      else
-         printf(" ~~ \n");
-   }
-   
-   printf("\n");
+   tablahash[i] = item;
 }

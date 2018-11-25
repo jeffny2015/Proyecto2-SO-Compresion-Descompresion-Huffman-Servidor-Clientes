@@ -15,8 +15,12 @@
 #include <fcntl.h>
 #include <sys/sendfile.h>
 #include "hash.h"
-#include "client.h"
 
+char NombreArchivo[20];
+int totalCaracteres;
+char *lista_caracter;
+int *lista_apariciones;
+int len_lista;
 char ip_servidor[25];
 int *lista_paginas;
 ssize_t len;
@@ -142,7 +146,7 @@ void iniciarSocketTCP(char *ip,int puerto){
         printf("[-] Error de conexion\n");
         exit(1);
     }
-    printf("[-] Paso 1: Recibimos\n");
+    printf("[-] Paso 1: Recibimos info del archivo a comprimir\n");
     recv(socket_cliente, buffer, sizeof(buffer), 0);
 
     token = strtok(buffer,"|");
@@ -181,8 +185,8 @@ void iniciarSocketTCP(char *ip,int puerto){
     aux = 0;
     fclose(Arch);
 
-    printf("[-] Paso 2: Recibimos\n");
-    printf("[-] Paso 3: leemos Frecuencias\n");
+    printf("[-] Paso 2: Recibimos archivo a comrpimir\n");
+    printf("[-] Paso 3: Leemos el archivo para sacar las frecuencias\n");
     len_lista = inicializarLista();
     Arch =fopen(copiaNombre,"r");
 
@@ -195,8 +199,8 @@ void iniciarSocketTCP(char *ip,int puerto){
       }else{agregarElemento((char)c);}
     }
     fclose(Arch);
-    printf("[-] Paso 4: terminamos  frecuencias\n");
-    printf("[-] Paso 5: Las escribimos en  archivo\n");
+    printf("[-] Paso 4: Se terminan de sacar las frecuencias\n");
+    printf("[-] Paso 5: Las escribimos en archivo\n");
     strcpy(frecuencia_f,"f");
     strcat(frecuencia_f,copiaNombre);
     Arch = fopen(frecuencia_f,"w");
@@ -215,12 +219,9 @@ void iniciarSocketTCP(char *ip,int puerto){
     sprintf(file_size, "%ld", file_stat.st_size);
     strcat(file_size, "|");
     strcat(file_size, frecuencia_f);
-    printf("[-] Paso 7: Enviamos datos\n");
+    printf("[-] Paso 7: Enviamos info del archivo con las frecuencias\n");
     len = 0;
     len = send(socket_cliente, file_size, sizeof(file_size), 0);
-
-
-
 
     sent_bytes = 0;
     offset = 0;
@@ -241,7 +242,7 @@ void iniciarSocketTCP(char *ip,int puerto){
     remain_data = 0;
     close(manejar_archivo);
 
-    printf("[-] Paso 9: Recibimos datos con los valores totales\n");
+    printf("[-] Paso 9: Recibimos informacion del archivo de las frecuencias recibidas por el servidor\n");
 
     bzero(buffer,256);
     recv(socket_cliente, buffer, sizeof(buffer), 0);
@@ -279,9 +280,6 @@ void iniciarSocketTCP(char *ip,int puerto){
     fclose(Arch);
 
     printf("[-] Paso 11: Preparamos para comprimir\n");
-    dummyItem = (struct DataItem*) malloc(sizeof(struct DataItem));
-    strcpy(dummyItem->data,"-1");
-    dummyItem->key = -1;
     Arch = fopen("valoresHuffman.txt","r");
 
     int i = 0;
@@ -299,17 +297,17 @@ void iniciarSocketTCP(char *ip,int puerto){
     hash_len += 1;
     bzero(tmp6,256);
     bzero(buffer,256);
-    int key;
-    hashArray =  malloc(hash_len * sizeof(struct DataItem));
-    setSize(hash_len);
+    int llave;
+    tablahash=  malloc(hash_len * sizeof(struct InfoItem));
+    setlen(hash_len);
 
     while(fgets(buffer, 256, Arch) != NULL){
       token = strtok(buffer," ");
-      key = atoi(token);
+      llave = atoi(token);
       token = strtok(NULL," ");
       strcpy(tmp6,token);
       token = strtok(tmp6,"\n");
-      insert(key, token);
+      insertar(llave, token);
       bzero(tmp6,256);
     }
 
@@ -330,10 +328,10 @@ void iniciarSocketTCP(char *ip,int puerto){
 
       if(feof(Arch) ) {break;}
 
-      item = search(c);
+      item = buscar(c);
       if(item != NULL) {
-        for (int i = 0; i < strlen(item->data); i++) {
-          if (item->data[i] == '1'){escribirBit(1);
+        for (int i = 0; i < strlen(item->valor); i++) {
+          if (item->valor[i] == '1'){escribirBit(1);
           }else{escribirBit(0);}
           contador++;
           if (contador == 8){contador = 0;}
@@ -391,6 +389,7 @@ void iniciarSocketTCP(char *ip,int puerto){
         if (sent_bytes <= 0){break;}
         remain_data -= sent_bytes;
     }
+    printf("[-] Paso 14: Se termina  de enviar el archivo comprimido\n");
 }
 
 int main(int argc, char const *argv[]){
