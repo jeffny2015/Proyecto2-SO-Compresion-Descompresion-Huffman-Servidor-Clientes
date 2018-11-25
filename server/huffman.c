@@ -172,7 +172,7 @@ void printArr(int arr[], int n,char c)
 		 bin[i] = arr[i] + '0';
 	bin[n] = '\0';
 
-	printf("key[%c:%d], val[%s]\n", c,c,bin);
+	//printf("key[%c:%d], val[%s]\n", c,c,bin);
 	fprintf(f,"%d %s\n",c,bin);
 	insert(c, bin);
 
@@ -297,21 +297,15 @@ void HuffmanCodes(char data[], int freq[], int size)
 	// Print Huffman codes using
 	// the Huffman tree built above
 	int arr[MAX_TREE_HT], top = 0;
-
 	char archivo[20] = "valoresHuffman";
-	f = fopen(archivo,"r");
-	if(f == NULL){
-		f = fopen(archivo,"w");
-	   	fprintf(f,"%d %d\n",totalCaracteres,len);
-	   	printf("HOla mierda\n");
 
-		printCodes(root, arr, top);
+	f = fopen(archivo,"w");
+   	fprintf(f,"%d %d\n",totalCaracteres,len);
+	printCodes(root, arr, top);
 
-		fclose(f);
-		display();
-	}else{
-		printf("[-] Ya fue creado el archivo con los valores de huffman\n");
-	}
+	fclose(f);
+	//display();
+	
 
 
 }

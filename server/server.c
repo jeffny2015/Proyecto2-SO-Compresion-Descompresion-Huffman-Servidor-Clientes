@@ -94,23 +94,39 @@ void *escuchandoServidor(){
         exit(1);
     }
 }
-
 void *conexionClientes(void *param){
-    //Hilo de cada cliente para que el server se siga comunicando con el cliente
-    //printf("[Cliente]Conectado\n");
-
-    int recibir, escribir, nuevo_socket;
-    nuevo_socket = *((int*)param);
-    char* ip = ipHilo;
-    int puerto = puertoHilo;
+    //Socket
+    int nuevo_socket = *((int*)param);
+    //Buffers
     char file_size[256];
+    //Para separar los mensajes serializados
+    char *token;
+    //para recibir el nomebre de  los arhivos
+    char *nomArch;
+    char nomArchaux[15];
+    //para manejar archivos
+    FILE *Arch;
+    //temporal
+    int aux;
 
+    int copianumerocliente;
+    //Variables 
+
+    int c;
+    int esta;
+    char buf[1024];
+    int cant;
+    char letra;
+
+
+    //Esperamos al server a que quiera enviar
     while(1){
         if (enviar){
             break;
         }
     }
-    printf("contador_archivo_enviado: %d\n", contador_archivo_enviado );
+
+    //Aqui creamos los archivos con las partes separadas del mensaje para cada cliente
     char nombre_archivo[7];
     char num[5];
 
@@ -119,14 +135,11 @@ void *conexionClientes(void *param){
     }else{
       strcpy(nombre_archivo, "x");
     }
-
+    copianumerocliente = contador_archivo_enviado;
     sprintf(num, "%d", contador_archivo_enviado);
     strcat(nombre_archivo, num);
 
-    printf("%s\n", nombre_archivo);
-    printf("%d\n", contador_archivo_enviado);
-
-
+    //Abrimos el archivo
     printf("[-] Abriendo: %s\n",nombre_archivo);
     manejar_archivo = open(nombre_archivo, O_RDONLY);
 
@@ -140,6 +153,11 @@ void *conexionClientes(void *param){
         exit(1);
     }
 
+
+    //Enviamos el archivo
+
+
+    //Enviamos los datos del archivo
     fprintf(stdout, "[-] Largo del archivo: %ld bytes\n", file_stat.st_size);
 
     sprintf(file_size, "%ld", file_stat.st_size);
@@ -148,248 +166,173 @@ void *conexionClientes(void *param){
     strcat(file_size, nombre_archivo);
 
     len = send(nuevo_socket, file_size, sizeof(file_size), 0);
-    if (len < 0){
+    if (len <= 0){
         printf("[-] Error enviando info del archivo");
         exit(1);
     }
+    len = 0;
+
+    bzero(file_size, 256);
+
+
+    /*char buftmp[20];
+    recv(nuevo_socket,buftmp,strlen(buftmp),0);
+    printf("%s\n",buftmp);
+    bzero(buftmp,20);*/
 
     sent_bytes = 0;
     offset = 0;
     remain_data = file_stat.st_size;
 
-    bzero(file_size, 256);
-
-    recv(nuevo_socket,file_size,256,0);
-    printf("Recv file_size: %s\n",file_size);
-    bzero(file_size, 256);
     while (remain_data > 0){
         sent_bytes = sendfile(nuevo_socket, manejar_archivo, &offset, remain_data);
-        if (sent_bytes <= 0)
-        {
-            break;
-        }
+        if (sent_bytes <= 0){break;}
         remain_data -= sent_bytes;
-        //printf("Send bytes: %d\n",sent_bytes);
     }
-    printf("HOla Hola\n");
+    close(manejar_archivo);
+    remain_data = 0;
+    printf("[-]Paso 1: Enviar archivo al cliente\n");
 
+    //Recibimos las frecuencias
 
-    /********/
+    //Recibimos los datos para leer el archivo con las frecuencaias
+    len = recv(nuevo_socket, file_size, sizeof(file_size),0);//MSG_WAITALL);
 
-    bzero(file_size, 256);
-
-    printf("[-] Recibiendo datos\n");
-
-    /* Recivimo size del archivo y el nombre*/
-
-    len = recv(nuevo_socket, file_size, 256, MSG_WAITALL);
-
-    if(len>0){
-    printf("recibido\n");
+    token = strtok(file_size,"|");
+    tamanio_archivo = atoi(token);
+    nomArch = strtok(NULL, "|");
+    strcpy(nomArchaux,nomArch);
+    //Abrimos para poder escribir
+    Arch = fopen(nomArch, "w");
+    if (Arch == NULL){
+        fprintf(stderr, "Error al abrir el archivo1: %s\n", strerror(errno));
+        exit(1);
     }
-
-    printf("contenido %s\n", file_size );
-
-    //split para sacar el nombre y el size del archivo
-
-    char *token5 = strtok(file_size,"|");
-    tamanio_archivo = atoi(token5);
-
-    printf("size %d\n", tamanio_archivo);
-
-    char *nombreArchivo5 = strtok(NULL, "|");
-    printf("nombre %s\n", nombreArchivo5);
-
-    FILE *archivoComprimido5;
-    archivoComprimido5 = fopen(nombreArchivo5, "w");
-    if (archivoComprimido5 == NULL)
-    {
-    fprintf(stderr, "Error al abrir el archivo1: %s\n", strerror(errno));
-    exit(1);
-    }
-    int datos_pendientes5 = 0;
-    datos_pendientes5 = tamanio_archivo;
+    remain_data = tamanio_archivo;
     printf("[-] Iniciando Transferencia\n");
 
 
 
-    char datos5[datos_pendientes5];
-    int tmp5 = 0;
-    while (datos_pendientes5 > 0){
-        //printf("ENtre Entrew\n");
-        len = recv(nuevo_socket, datos5, datos_pendientes5, 0);
-        if (len <= 0)
-        {
-            break;
-        }
-        fwrite(datos5, sizeof(char), len, archivoComprimido5);
-        datos_pendientes5 -= len;
+    char datos[remain_data];
+    aux = remain_data;
+    while (remain_data > 0){
+        len = recv(nuevo_socket, datos, remain_data, 0);
+        if (len <= 0){break;}
+        fwrite(datos, sizeof(char), len, Arch);//Size of  ?
+        remain_data -= len;
     }
 
-    fclose(archivoComprimido5);
-    /******/
-
-    //bloqueo
-
-
-    printf("[-] Ingresando valores a la lista de frecuencias \n" );
-    //FILE *f;
-    archivoComprimido5 =fopen(nombreArchivo5,"r");
-    //f = open(, O_RDONLY);
-    int c;
-    int esta;
-    char buf[1024];
-    int cant;
-    char letra;
-
-    while (fgets(buf, sizeof(buf), archivoComprimido5) != NULL)
-    {
-      buf[strlen(buf) - 1] = '\0'; // eat the newline fgets() stores
-      printf("%s\n", buf);
+    remain_data = 0;
+    len = 0;
+    bzero(file_size,256);
+    bzero(datos,aux);
+    aux = 0;
+    fclose(Arch);
+    printf("[-]Paso 2: Escribimos el archivo de frecuencias que envio el cliente\n");
+    nomArch = nomArchaux;
+    Arch =fopen(nomArch,"r");
+    while (fgets(buf, sizeof(buf), Arch) != NULL){
+      buf[strlen(buf) - 1] = '\0';
       char *caracter = strtok(buf," ");
       letra = atoi(caracter);
-      //printf("caracter: %c\n", letra);
-
       char *cantidad = strtok(NULL, " ");
       cant = atoi(cantidad);
-      //printf("cantidad %d\n", cant);
-
       esta = estaEnLista((char)letra);
       if (esta != -1){
         aumentarAparicion(esta, cant);
       }else{
         agregarElemento((char)letra, cant);
       }
-
     }
-
-    fclose(archivoComprimido5);
-    printf("[-] Lista de frecuencias\n" );
-    imprimirLista();
-
-    printf("[-] Fin lista de frecuencias\n");
-
+    bzero(buf,1024);
+    fclose(Arch);
+    printf("[-]Paso 3: Frecuencias listas\n");
 
     archivos_por_recibir -= 1;
-    printf("espero algo \n");
-    while(archivos_por_recibir > 0){
-      //printf("espero ? %d\n", archivos_por_recibir);
-    };
+    
+    printf("[-]Paso 4: Esperando a los demas clientes para recibir las demas frecuencias\n");
+    while(archivos_por_recibir > 0){};
 
-    printf("[-] Todos los archivos de frecuencias han sido recividos\n");
-
-    //Se crea el arbol de huffman y el archivo con los valores comprimidos
-    HuffmanCodes(lista_caracter, lista_apariciones, len_lista);
-
-    /////////////////////////////////////
-
-
-    bzero(file_size, 256);
-    len = recv(nuevo_socket, file_size, 256, MSG_WAITALL);
-
-    if(len>0){
-    printf("recibido\n");
+    printf("[-]Paso 5: Sumar frecuencias totales \n");
+    if (!copianumerocliente){
+        HuffmanCodes(lista_caracter, lista_apariciones, len_lista);
+        archivos_por_recibir = -1;
     }
+    while(archivos_por_recibir > -1){}
 
-    printf("contenido aqui? %s\n", file_size );
 
-    bzero(file_size, 256);
+    printf("[-]Paso 6: Eenviarselas al cliente \n");
 
+    manejar_archivo = 0;
     manejar_archivo = open("valoresHuffman", O_RDONLY);
 
     if (fstat(manejar_archivo, &file_stat) < 0){
         printf("[-] No se pudo optener la info del archivo: valoresHuffman\n");
         exit(1);
     }
-
     sprintf(file_size, "%ld", file_stat.st_size);
-
     strcat(file_size, "|");
-
     len = send(nuevo_socket, file_size, sizeof(file_size), 0);
-    if (len < 0){
+    if (len <= 0){
         printf("[-] Error enviando info del archivo");
         exit(1);
     }
-
     bzero(file_size, 256);
-
     sent_bytes = 0;
     offset = 0;
+    len = 0;
     remain_data = file_stat.st_size;
+
     while (remain_data > 0){
         sent_bytes = sendfile(nuevo_socket, manejar_archivo, &offset, remain_data);
-        if (sent_bytes <= 0)
-        {
-            break;
-        }
+        if (sent_bytes <= 0){break;}
         remain_data -= sent_bytes;
-        //printf("Send bytes: %d\n",sent_bytes);
     }
-    printf("algo se envio\n" );
-    //recivimos el archivo binario
+    remain_data = 0;
     close(manejar_archivo);
-
-    ///////////////////////////////////////
-
-    //recivimos el archivo binario
-
-    bzero(file_size, 256);
-
-    printf("[-] Recibiendo datos\n");
-
-    // Recivimo size del archivo y el nombre
-
+    printf("[-]Paso 7: Envio Completado \n");
+    bzero(nomArchaux,sizeof(nomArchaux));
+    printf("[-]Paso 8: Recivimos el archivo comprimido \n");
+    //Recibimos los datos para escribir
     len = recv(nuevo_socket, file_size, sizeof(file_size), 0);//MSG_OOB);
-
-    if(len>0){
-      printf("recibido\n");
-    }
-
-    printf("contenido %s\n", file_size );
-
-    //split para sacar el nombre y el size del archivo
-
-    char *token = strtok(file_size,"|");
+    tamanio_archivo = 0;
+    token = strtok(file_size,"|");
     tamanio_archivo = atoi(token);
-
-    printf("size %d\n", tamanio_archivo);
-
-    char *nombreArchivo = strtok(NULL, "|");
-    printf("nombre %s\n", nombreArchivo);
-
+    nomArch = strtok(NULL, "|");
+    strcpy(nomArchaux,nomArch);
     totalcaracteres = atoi(strtok(NULL, "|"));
+
     printf("totalcaracteres %d\n", totalcaracteres);
+    printf("[-]Paso 9: Recibimos los datos ahora a escribirlos \n");
 
-    printf("[-] Cargando archivo\n");
-    FILE *archivoComprimido;
-    archivoComprimido = fopen(nombreArchivo, "w");
-    if (archivoComprimido == NULL)
-    {
-    fprintf(stderr, "Error al abrir el archivo1: %s\n", strerror(errno));
-    exit(1);
+    Arch = fopen(nomArch, "w");
+    if (Arch == NULL){
+        fprintf(stderr, "Error al abrir el archivo1: %s\n", strerror(errno));
+        exit(1);
     }
-    int datos_pendientes = 0;
-    datos_pendientes = tamanio_archivo;
-    printf("[-] Iniciando Transferencia\n");
-
-    char datos[datos_pendientes];
-    int tmp = 0;
-    while (datos_pendientes > 0){
-        len = recv(nuevo_socket, datos, datos_pendientes, 0);
-        if (len <= 0)
-        {
-            break;
-        }
-        fwrite(datos, sizeof(char), len, archivoComprimido);
-        datos_pendientes -= len;
+    remain_data = tamanio_archivo;
+    char datos1[remain_data];
+    aux = 0;
+    aux = remain_data;
+    while (remain_data > 0){
+        len = recv(nuevo_socket, datos1,remain_data, 0);
+        if (len <= 0){break;}
+        fwrite(datos1, sizeof(char), len, Arch);
+        remain_data -= len;
     }
-    printf("[-] Termino la transferencia\n");
-
-    fclose(archivoComprimido);
-
+    bzero(file_size,256);
+    bzero(datos1,aux);
+    len = 0;
+    remain_data = 0;
+    tamanio_archivo = 0;
+    fclose(Arch);
+    printf("[-]Paso 10: Escribimos los datos \n");
     close(nuevo_socket);
+
+
 }
+
+
 
 void iniciarSocketTCP(char *ip,int puerto,int disponibilidad){
     //Configuracionde scoket he inicio para escuchar por los clientes
