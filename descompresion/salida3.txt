@@ -1,4 +1,0 @@
-Split large files into a number of smaller files in Unix split [options] filename prefix
-Replace filename with the name of the large file you wish to split. Replace prefix with the name you wish to give the small
-esyo es eun peuqean prueba con un archivo mas pequenio.
-hola prueba adios jamo ÿ

@@ -4,5 +4,6 @@ make
 primer argumento: archivo comprimido
 segundo argumento: nombre del archivo al descomprimirlo
 
+Ejemplo de corrida:
 ./ejecutable comprimido.txt salida.txt
 

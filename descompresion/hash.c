@@ -4,71 +4,55 @@
 #include <stdbool.h>
 #include "hash.h"
 
-int size;
+int len;
 
-void setSize(int s){
-   size = s;
+void setlen(int l){
+   len = l;
 }
-int hashCode(char key[]) {
-   int tmp = atoi(key) % size;
+int indice(char llave[]) {
+   int tmp = atoi(llave) % len;
    return tmp;
 }
 
-struct DataItem *search(char key[]) {
-   //get the hash
-   int hashIndex = hashCode(key);
-
-   //move in array until an empty
-   while(hashArray[hashIndex] != NULL) {
-     //printf("eqwewqe %d\n", (size-1) );
-      if(strcmp(hashArray[hashIndex]->key ,key) == 0){
-         return hashArray[hashIndex];
+struct InfoItem *buscar(char llave[]) {
+   // Buscamos el valor en latablahash
+   int i = indice(llave);
+   while(tablahash[i] != NULL) {
+      //si las llaves son iguales
+      if(strcmp(tablahash[i]->llave ,llave) == 0){
+         return tablahash[i];
       }
-
-      //go to next cell
-      ++hashIndex;
-
-      //wrap around the table
-      hashIndex %= size;
-      //printf("hash i %d\n", hashIndex );
-
-      if(hashIndex == (size)){
+      ++i;
+      i %= len;
+      if(i == (len)){
         break;
       }
-      //printf("hola\n" );
    }
-   //printf("DSADSADSA\n");
    return NULL;
 }
 
-void insert(char key[],char data[]) {
-   struct DataItem *item = (struct DataItem*) malloc(sizeof(struct DataItem));
-   strcpy(item->data,data);
-   //item->key = key;
-   strcpy(item->key,key);
-   //get the hash
-   int hashIndex = hashCode(key);
-   //move in array until an empty or deleted cell
-   while(hashArray[hashIndex] != NULL && atoi(hashArray[hashIndex]->key) != -1) {
-      //go to next cell
-      ++hashIndex;
-      //wrap around the table
-      hashIndex %= size;
-
+void insertar(char llave[],char valor[]) {
+   //inicializamos y agregamos la llave y el valor
+   struct InfoItem *item = (struct InfoItem*) malloc(sizeof(struct InfoItem));
+   strcpy(item->valor,valor);
+   strcpy(item->llave,llave);
+   //le asignamos una pos en el hash
+   int i = indice(llave);
+   while(tablahash[i] != NULL && atoi(tablahash[i]->llave) != -1) {
+      ++i;
+      i %= len;
    }
-   hashArray[hashIndex] = item;
+   tablahash[i] = item;
 }
 
-void display() {
+void imprimirHash() {
    int i = 0;
 
-   for(i = 0; i<size; i++) {
-
-      if(hashArray[i] != NULL)
-         printf(" (%s,%s)\n",hashArray[i]->key,hashArray[i]->data);
+   for(i = 0; i<len; i++) {
+      if(tablahash[i] != NULL)
+         printf(" (%s,%s)\n",tablahash[i]->llave,tablahash[i]->valor);
       else
         break;
    }
-
    printf("\n");
 }
