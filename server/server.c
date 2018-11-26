@@ -44,14 +44,6 @@ void iniciarTablaClientes(){
     len_tabla_clientes = 0;
 }
 
-int minimo(int a , int b){
-    if (a < b){
-        return a;
-    }else{
-        return b;
-    }
-}
-
 void agregarCliente(char *ip,int puerto, int socket){
     len_tabla_clientes++;
     TablaClientes = (struct InfoAdd *)realloc(TablaClientes,len_tabla_clientes*sizeof(struct InfoAdd));
@@ -90,7 +82,6 @@ void imprimirClientes(){
 }
 
 void *escuchandoServidor(){
-
     char enter[10];
     while(1){
         scanf("%s",enter);
@@ -113,18 +104,16 @@ void *conexionClientes(void *param){
     FILE *Arch;
     //temporal
     int aux;
-
+    //variables para los send's y recv's
     int sent_bytes;
     int remain_data;
-
     long int offset;
     struct stat file_stat;
     ssize_t len;
     int tamanio_archivo;
     int manejar_archivo;
     int copianumerocliente;
-    //Variables
-
+    //Variables para manejar archivos
     int c;
     int esta;
     char buf[1024];

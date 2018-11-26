@@ -138,9 +138,10 @@ int main (int argc, char **argv){
 
     //cantidad_caracteres = charsPorCliente;
     char x[cantidad_caracteres];
+    int zz = cantidad_caracteres;
 
     binario = (char *) malloc(1);
-    while(cantidad_caracteres > 0){
+    while(cantidad_caracteres--){
       printf("\n\n\n\n ME MUEVO AL SIGUIENTE CLIENTE\n\n\n\n");
       if(cantidad_clientes == 0){
         break;
@@ -156,9 +157,10 @@ int main (int argc, char **argv){
 
         //revisar si pertenece a la tabla hash parte del byte
         //o seguir agarrando bytes y concatenar valores
-
+        indice = 0;
         printf("valor del binario %s\n", binario);
         for (int j = 0; j <= 7; j++) {
+          printf("Indice %d\n",indice );
           strncat(binario, &byte[indice], 1 );
 
           printf("valor acumulado del binario %s\n", binario );
@@ -179,7 +181,7 @@ int main (int argc, char **argv){
             indice += 1;
             free(binario);
             binario = (char *) malloc(1);
-            cantidad_caracteres --;
+            //cantidad_caracteres --;
             if(indiceChar == charsPorCliente){
               //free(binario);
               break;
@@ -189,7 +191,6 @@ int main (int argc, char **argv){
             tamanio += 1;
             binario= (char *) realloc(binario, tamanio);
           }
-
         }
         tamanio +=1;
         indice = 0;
@@ -208,8 +209,12 @@ int main (int argc, char **argv){
       cantidad_clientes --;
       charsPorCliente += charsPorCliente;
     }
+ 
+    //fwrite(x, sizeof(x[0]), sizeof(x)/sizeof(x[0]), fp);
+    for (i = 0; i < zz-1; i++){
+      putc(x[i],fp);
 
-    fwrite(x, sizeof(x[0]), sizeof(x)/sizeof(x[0]), fp);
+    }
 
     fclose(fp);
     fclose (f);
