@@ -108,7 +108,7 @@ int main (int argc, char **argv){
     fp = fopen(nombreDescomprimido, "wb");
 
 
-
+    int copiaCantidad = cantidad_clientes;
     if(cantidad_clientes > 1){
       bytesCliente = cantidad_caracteres / cantidad_clientes;
       printf("bytes %d\n", bytesCliente );
@@ -117,9 +117,11 @@ int main (int argc, char **argv){
       if(bytesCliente % 2 == 1 && cantidad_clientes % 2 == 0){
         bytesCliente += 1;
         casoEspecial = 1;
+        printf("caso especial 1\n");
       }else if(bytesCliente % 2 == 0 && cantidad_clientes % 2 == 1){
         bytesCliente += 1;
         casoEspecial = 1;
+        printf("caso especial 2\n");
       }
       charsPorCliente = bytesCliente;
     }else{
@@ -139,7 +141,10 @@ int main (int argc, char **argv){
 
     binario = (char *) malloc(1);
     while(cantidad_caracteres > 0){
-      //printf("\n\n\n\n\n\n\n\n\n ME MUEVO AL SIGUIENTE CLIENTE\n\n\n\n\n\n\n\n\n\n");
+      printf("\n\n\n\n ME MUEVO AL SIGUIENTE CLIENTE\n\n\n\n");
+      if(cantidad_clientes == 0){
+        break;
+      }
       /*indice = 0;
       char *binario;
       binario = (char *) malloc(1);
@@ -147,24 +152,27 @@ int main (int argc, char **argv){
       while (charsPorCliente > indiceChar) {
         fread(&buffer, 1, 1, f);
         char *byte = print_byte_as_bits(buffer);
-        //printf("basura %s\n", byte);
+        //printf("BYTE %s\n", byte);
 
         //revisar si pertenece a la tabla hash parte del byte
         //o seguir agarrando bytes y concatenar valores
 
-        //printf("valor del binario %s\n", binario);
+        printf("valor del binario %s\n", binario);
         for (int j = 0; j <= 7; j++) {
-          //printf("SIZE %d\n", tamanio);
           strncat(binario, &byte[indice], 1 );
 
-          //printf("valor acumulado del binario %s\n", binario );
+          printf("valor acumulado del binario %s\n", binario );
           //usleep(10000);
           item = search(binario);
           if(item != NULL){
             //escribimos la letra en el archivo
             num = atoi(item->data);
-            //printf("SE ENCONTRO UNO %s",item->data);
-            printf("%c",(char)num);
+            printf("Se encontro uno %s  %c \n",item->data, (char)num);
+            if(casoEspecial && cantidad_clientes == 1 && charsPorCliente == indiceChar){
+              printf("entro aqui?\n" );
+              break;
+              //x[indiceChar] = num;
+            }
             x[indiceChar] = num;
             indiceChar++;
             tamanio = 7;
@@ -185,12 +193,19 @@ int main (int argc, char **argv){
         }
         tamanio +=1;
         indice = 0;
-
+        if(!casoEspecial && cantidad_clientes != copiaCantidad && (indiceChar+1) > charsPorCliente){
+          //printf("%s\n", x);
+          printf("entro en esta condicion\n" );
+          indiceChar += 1;
+          x[indiceChar] = ' ';
+          break;
+        }
         if(indiceChar == charsPorCliente){
           //free(binario);
           break;
         }
       }
+      cantidad_clientes --;
       charsPorCliente += charsPorCliente;
     }
 
