@@ -379,7 +379,7 @@ void *conexionClientes(void *param){
       int cantJuntar = len_tabla_clientes;
       char numero[10];
       //strcpy(str, "cat valoresHuffman.txt ");
-      strcpy(str, "head -c -1 -q ");
+      strcpy(str, "cat ");
       while(cantJuntar > 1){
         cantJuntar -= 1;
         if(indice < 10){
@@ -399,7 +399,7 @@ void *conexionClientes(void *param){
       }
       sprintf(numero, "%d", indice);
       strcat(str, numero);
-      strcat(str, ".txt > comprimido2.txt");
+      strcat(str, ".txt >> comprimido2.txt");
       //printf("str: %s\n", str);
       system(str);
       system("cat comprimido2.txt >> comprimido.txt");

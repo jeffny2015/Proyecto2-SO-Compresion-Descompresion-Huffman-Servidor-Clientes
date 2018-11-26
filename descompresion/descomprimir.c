@@ -107,10 +107,11 @@ int main (int argc, char **argv){
     FILE *fp;
     fp = fopen(nombreDescomprimido, "wb");
 
-    char x[cantidad_caracteres];
 
-    /*if(cantidad_clientes > 1){
+
+    if(cantidad_clientes > 1){
       bytesCliente = cantidad_caracteres / cantidad_clientes;
+      printf("bytes %d\n", bytesCliente );
       //distribuimos correctamente los archivos
       //si la cantidad de clientes es impar, la cantidad de bytes tambien y lo mismo si es par, para que no quede 1 byte suelto
       if(bytesCliente % 2 == 1 && cantidad_clientes % 2 == 0){
@@ -121,21 +122,32 @@ int main (int argc, char **argv){
         casoEspecial = 1;
       }
       charsPorCliente = bytesCliente;
-    }else{*/
+    }else{
       charsPorCliente = cantidad_caracteres;
-    //}
+    }
+
+    printf("chars por cada cliente %d\n", charsPorCliente );
 
     char *binario;
     int tamanio = 7;
     indice = 0;
     int indiceChar = 0;
     int num;
+
+    //cantidad_caracteres = charsPorCliente;
+    char x[cantidad_caracteres];
+
     binario = (char *) malloc(1);
     while(cantidad_caracteres > 0){
-      for (int i = 0; i < charsPorCliente; i++) {
+      //printf("\n\n\n\n\n\n\n\n\n ME MUEVO AL SIGUIENTE CLIENTE\n\n\n\n\n\n\n\n\n\n");
+      /*indice = 0;
+      char *binario;
+      binario = (char *) malloc(1);
+      tamanio = 7;*/
+      while (charsPorCliente > indiceChar) {
         fread(&buffer, 1, 1, f);
         char *byte = print_byte_as_bits(buffer);
-        //printf("%s\n", byte);
+        //printf("basura %s\n", byte);
 
         //revisar si pertenece a la tabla hash parte del byte
         //o seguir agarrando bytes y concatenar valores
@@ -146,13 +158,13 @@ int main (int argc, char **argv){
           strncat(binario, &byte[indice], 1 );
 
           //printf("valor acumulado del binario %s\n", binario );
-          //usleep(100000);
+          //usleep(10000);
           item = search(binario);
           if(item != NULL){
             //escribimos la letra en el archivo
             num = atoi(item->data);
             //printf("SE ENCONTRO UNO %s",item->data);
-            //printf("%c",(char)num);
+            printf("%c",(char)num);
             x[indiceChar] = num;
             indiceChar++;
             tamanio = 7;
@@ -160,7 +172,8 @@ int main (int argc, char **argv){
             free(binario);
             binario = (char *) malloc(1);
             cantidad_caracteres --;
-            if(cantidad_caracteres <= 1){
+            if(indiceChar == charsPorCliente){
+              //free(binario);
               break;
             }
           }else{
@@ -173,10 +186,12 @@ int main (int argc, char **argv){
         tamanio +=1;
         indice = 0;
 
-        if(cantidad_caracteres <= 1){
+        if(indiceChar == charsPorCliente){
+          //free(binario);
           break;
         }
       }
+      charsPorCliente += charsPorCliente;
     }
 
     fwrite(x, sizeof(x[0]), sizeof(x)/sizeof(x[0]), fp);
