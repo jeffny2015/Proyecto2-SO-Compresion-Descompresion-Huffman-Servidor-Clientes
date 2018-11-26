@@ -1,3 +1,0 @@
-You can exclude [options], or replace it with eithsnee of the following:
-
-If you use the -l (a lowercase L) option, replace linenumber with the number of lines you'd like in each of the smaller files (the default is 1,000). If you use the -b option, replace bytes with the number of bytes you'd like in each of the smaller files.
